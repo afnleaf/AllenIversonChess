@@ -18,3 +18,11 @@
 ### Engine (AI part)
 
 
+# Dependencies
+
+pygame
+
+python -m pip install pygame --pre
+
+
+
