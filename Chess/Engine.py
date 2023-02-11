@@ -28,6 +28,8 @@ class GameState():
         # track moves
         self.moveLog = []
     
+    # take a move and execute it
+    # castling and pawn promotion not implemented, could also add en-passant
     def makeMove(self, move):
         self.board[move.startRow][move.startCol] = '--'
         self.board[move.endRow][move.endCol] = move.pieceMoved
@@ -35,6 +37,89 @@ class GameState():
         self.moveLog.append(move)
         # switch turns
         self.whiteToMove = not self.whiteToMove
+
+
+    # undo last move made
+    def undoMove(self):
+        # check if at least 1 move has been made
+        if len(self.moveLog) != 0:
+            # remove last element in list
+            move = self.moveLog.pop()
+            # return piece
+            self.board[move.startRow][move.startCol] = move.pieceMoved
+            # return captured piece
+            self.board[move.endRow][move.endCol] = move.pieceCaptured
+            # switch turns
+            self.whiteToMove = not self.whiteToMove
+
+
+    # all moves considering checks
+    # ex pawn cant move if the pawn is pinned to a check by an opposing piece
+    # player cant put themselves in check
+    def getValidMoves(self):
+        # not checking for checks rn
+        return self.getAllPossibleMoves()
+
+
+    # all moves without considering checks
+    # consider all moves that are possible based on how a piece is legally allowed to move
+    def getAllPossibleMoves(self):
+        moves = [Move((6,4), (4,4), self.board)]
+        # check all pieces on our board
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                # find the colour of the piece
+                turn = self.board[row][col][0]
+                if(turn == 'w' and self.whiteToMove) and (turn == 'b' and not self.whiteToMove):
+                    # get the piece type
+                    piece = self.board[row][col][1]
+                    if piece == 'P':
+                        self.getPawnMoves(row, col, moves)
+                    elif piece == 'N':
+                        self.getKnightMoves(row, col, moves)
+                    elif piece == 'B':
+                        self.getBishopMoves(row, col, moves)
+                    elif piece == 'R':
+                        self.getRookMoves(row, col, moves)
+                    elif piece == 'Q':
+                        self.getQueenMoves(row, col, moves)
+                    elif piece == 'K':
+                        self.getKingMoves(row, col, moves)
+        return moves
+
+
+    # get all pawn moves for the Pawn at board[row][col]
+    # add moves to list
+    def getPawnMoves(row, col, moves):
+        pass
+
+
+    # get all pawn moves for the Knight at board[row][col]
+    # add moves to list
+    def getKnightMoves(row, col, moves):
+        pass
+
+    # get all pawn moves for the Bishop at board[row][col]
+    # add moves to list
+    def getBishopMoves(row, col, moves):
+        pass
+
+    # get all pawn moves for the Rook at board[row][col]
+    # add moves to list
+    def getRookMoves(row, col, moves):
+        pass
+
+    # get all pawn moves for the Queen at board[row][col]
+    # add moves to list
+    def getQueenMoves(row, col, moves):
+        pass
+
+    # get all pawn moves for the King at board[row][col]
+    # add moves to list
+    def getKingMoves(row, col, moves):
+        pass
+    
+
 
 # for moves
 class Move():
@@ -73,9 +158,22 @@ class Move():
         self.endCol = end[1]
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
+        # gen unique move id between 0000 and 7777
+        self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
+        #print(self.moveID)
+
+
+    # override equals method
+    # compare one object to (other) object
+    def __eq__(self, other):
+        if isinstance(other, Move):
+            return self.moveID == other.moveID
+        return False
+
 
     def getChessNotation(self):
         return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
+
 
     def getRankFile(self, row, col):
         return self.colsToFiles[col] + self.rowsToRanks[row]

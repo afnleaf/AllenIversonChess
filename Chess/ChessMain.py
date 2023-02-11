@@ -26,6 +26,7 @@ def loadImages():
         IMAGES[piece] = p.transform.scale(p.image.load('images/' + piece + '.png'), (SQ_SIZE, SQ_SIZE))
     # Can access image by calling dictionary "IMAGES['wP']"
 
+
 # Main driver
 # User input
 # Updates gfx
@@ -35,6 +36,12 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = Engine.GameState()
+
+    # generate valid moves
+    validMoves = gs.getValidMoves()
+    # flag var for when a move is made
+    moveMade = False
+
     # do this once before the game while loop
     loadImages()
 
@@ -52,6 +59,7 @@ def main():
                 running = False
                 print("Move log:")
                 print(gs.moveLog)
+            # mouse input
             elif e.type == p.MOUSEBUTTONDOWN:
                 # get (x,y) location of the mouse
                 mousepos = p.mouse.get_pos()
@@ -69,13 +77,35 @@ def main():
                 if len(playerClicks) == 2:
                     # the engine makes the move
                     move = Engine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    gs.makeMove(move)
-                    # draw to cli
-                    printBoard(gs.board)
                     print(move.getChessNotation())
+                    # check that the move selected is actually valid
+                    if move in validMoves:
+                        gs.makeMove(move)
+                        moveMade = True
+                        # draw to cli
+                        printBoard(gs.board)
+                    else:
+                        print("invalid move")
                     # reset the user clicks
                     squareSelected = ()
                     playerClicks = []
+            # keyboard input
+            elif e.type == p.KEYDOWN:
+                # undo when z is pressed
+                if e.key == p.K_z:
+                    gs.undoMove()
+
+                    # prevent this from printing again
+                    #draw on CLI again
+                    print("undo")
+                    printBoard(gs.board)
+                    #validMoves = gs.getValidMoves()
+                    moveMade = True
+
+        if moveMade:
+            # gen new set of valid moves
+            validMoves = gs.getValidMoves()
+            moveMade = False
 
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
@@ -114,6 +144,7 @@ def drawPieces(screen, board):
                 # what is blit()
                 screen.blit(IMAGES[piece], p.Rect(col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
+
 # draw the pieces to the command line
 def printBoard(board):
     n = len(board)
@@ -130,7 +161,7 @@ def printBoard(board):
         print(letter + ' ', end = ' ')
         if(letter == 'H'):
             break
-    print()
+    print('', end = '\n\n')
 
 # default notation
 if __name__ == "__main__":
