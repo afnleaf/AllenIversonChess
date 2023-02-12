@@ -110,6 +110,7 @@ class GameState():
     # add moves to list
     # todo: pawn promotion, en-passant?
     def getPawnMoves(self, row, col, moves):
+        n = len(self.board)
         # white pawn moves
         if self.whiteToMove:
             # 1 square pawn advance
@@ -124,7 +125,7 @@ class GameState():
                 if self.board[row-1][col-1][0] == 'b':
                     moves.append(Move((row, col), (row-1, col-1), self.board))
             # diagonal capture right
-            if col+1 <= 7:
+            if col+1 < n:
                 # check for enemy piece
                 if self.board[row-1][col+1][0] == 'b':
                     moves.append(Move((row, col), (row-1, col+1), self.board))
@@ -143,7 +144,7 @@ class GameState():
                 if self.board[row+1][col-1][0] == 'w':
                     moves.append(Move((row, col), (row+1, col-1), self.board))
             # diagonal capture right
-            if col+1 <= 7:
+            if col+1 < n:
                 # check for enemy piece
                 if self.board[row+1][col+1][0] == 'w':
                     moves.append(Move((row, col), (row+1, col+1), self.board))
@@ -151,6 +152,7 @@ class GameState():
 
     # get all pawn moves for the Knight at board[row][col]
     # add moves to list
+    # to:do refactor
     def getKnightMoves(self, row, col, moves):
         n = len(self.board)
         # white knight moves
@@ -208,8 +210,132 @@ class GameState():
 
     # get all pawn moves for the Bishop at board[row][col]
     # add moves to list
+    # to:do refactor
     def getBishopMoves(self, row, col, moves):
-        pass
+        n = len(self.board)
+        # white bishop moves
+        if self.whiteToMove:
+            # check up and right
+            rminu = row - 1
+            cplus = col + 1
+            while rminu >= 0 and cplus < n:
+                piece = self.board[rminu][cplus]
+                if piece == '--':
+                    moves.append(Move((row, col), (rminu, cplus), self.board))
+                elif piece[0] == 'b':
+                    moves.append(Move((row, col), (rminu, cplus), self.board))
+                    break
+                elif piece[0] == 'w':
+                    break
+                rminu -= 1
+                cplus += 1
+
+            # check up and left
+            rminu = row - 1
+            cminu = col - 1
+            while rminu >= 0 and cminu < n:
+                piece = self.board[rminu][cminu]
+                if piece == '--':
+                    moves.append(Move((row, col), (rminu, cminu), self.board))
+                elif piece[0] == 'b':
+                    moves.append(Move((row, col), (rminu, cminu), self.board))
+                    break
+                elif piece[0] == 'w':
+                    break
+                rminu -= 1
+                cminu -= 1
+
+            # check down and right
+            rplus = row + 1
+            cplus = col + 1
+            while rplus < n and cplus < n:
+                piece = self.board[rplus][cplus]
+                if piece == '--':
+                    moves.append(Move((row, col), (rplus, cplus), self.board))
+                elif piece[0] == 'b':
+                    moves.append(Move((row, col), (rplus, cplus), self.board))
+                    break
+                elif piece[0] == 'w':
+                    break
+                rplus += 1
+                cplus += 1
+
+            # check down and left
+            rplus = row + 1
+            cminu = col - 1
+            while rplus < n and cminu >= 0:
+                piece = self.board[rplus][cminu]
+                if piece == '--':
+                    moves.append(Move((row, col), (rplus, cminu), self.board))
+                elif piece[0] == 'b':
+                    moves.append(Move((row, col), (rplus, cminu), self.board))
+                    break
+                elif piece[0] == 'w':
+                    break
+                rplus += 1
+                cminu -= 1
+
+        # black bishop moves
+        else:
+            # check up and right
+            rminu = row - 1
+            cplus = col + 1
+            while rminu >= 0 and cplus < n:
+                piece = self.board[rminu][cplus]
+                if piece == '--':
+                    moves.append(Move((row, col), (rminu, cplus), self.board))
+                elif piece[0] == 'w':
+                    moves.append(Move((row, col), (rminu, cplus), self.board))
+                    break
+                elif piece[0] == 'b':
+                    break
+                rminu -= 1
+                cplus += 1
+
+            # check up and left
+            rminu = row - 1
+            cminu = col - 1
+            while rminu >= 0 and cminu < n:
+                piece = self.board[rminu][cminu]
+                if piece == '--':
+                    moves.append(Move((row, col), (rminu, cminu), self.board))
+                elif piece[0] == 'w':
+                    moves.append(Move((row, col), (rminu, cminu), self.board))
+                    break
+                elif piece[0] == 'b':
+                    break
+                rminu -= 1
+                cminu -= 1
+
+            # check down and right
+            rplus = row + 1
+            cplus = col + 1
+            while rplus < n and cplus < n:
+                piece = self.board[rplus][cplus]
+                if piece == '--':
+                    moves.append(Move((row, col), (rplus, cplus), self.board))
+                elif piece[0] == 'w':
+                    moves.append(Move((row, col), (rplus, cplus), self.board))
+                    break
+                elif piece[0] == 'b':
+                    break
+                rplus += 1
+                cplus += 1
+
+            # check down and left
+            rplus = row + 1
+            cminu = col - 1
+            while rplus < n and cminu >= 0:
+                piece = self.board[rplus][cminu]
+                if piece == '--':
+                    moves.append(Move((row, col), (rplus, cminu), self.board))
+                elif piece[0] == 'w':
+                    moves.append(Move((row, col), (rplus, cminu), self.board))
+                    break
+                elif piece[0] == 'b':
+                    break
+                rplus += 1
+                cminu -= 1
 
 
     # get all pawn moves for the Rook at board[row][col]
