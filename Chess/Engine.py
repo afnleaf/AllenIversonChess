@@ -24,6 +24,16 @@ class GameState():
             ['wR','wN','wB','wQ','wK','wB','wN','wR']
         ])
 
+        # dictionary that works kind of like a switch statement
+        self.moveFunctions = {
+            'P': self.getPawnMoves,
+            'N': self.getKnightMoves,
+            'B': self.getBishopMoves,
+            'R': self.getRookMoves,
+            'Q': self.getQueenMoves,
+            'K': self.getKingMoves
+        }
+
         # white always moves first
         self.whiteToMove = True
 
@@ -66,15 +76,20 @@ class GameState():
     # all moves without considering checks
     # consider all moves that are possible based on how a piece is legally allowed to move
     def getAllPossibleMoves(self):
-        moves = [Move((6,4), (4,4), self.board)]
+        # moves = [Move((6,4), (4,4), self.board)]
+        moves = []
         # check all pieces on our board
         for row in range(len(self.board)):
             for col in range(len(self.board[row])):
                 # find the colour of the piece
                 turn = self.board[row][col][0]
-                if(turn == 'w' and self.whiteToMove) and (turn == 'b' and not self.whiteToMove):
+                if(turn == 'w' and self.whiteToMove) or (turn == 'b' and not self.whiteToMove):
                     # get the piece type
                     piece = self.board[row][col][1]
+                    # calls the appropriate move function based on the piece type
+                    self.moveFunctions[piece](row, col, moves)
+                    
+                    '''
                     if piece == 'P':
                         self.getPawnMoves(row, col, moves)
                     elif piece == 'N':
@@ -87,38 +102,80 @@ class GameState():
                         self.getQueenMoves(row, col, moves)
                     elif piece == 'K':
                         self.getKingMoves(row, col, moves)
+                    '''
         return moves
 
 
     # get all pawn moves for the Pawn at board[row][col]
     # add moves to list
-    def getPawnMoves(row, col, moves):
-        pass
+    def getPawnMoves(self, row, col, moves):
+        # white pawn moves
+        if self.whiteToMove:
+            # 1 square pawn advance
+            if self.board[row-1][col] == '--':
+                moves.append(Move((row, col), (row-1, col), self.board))
+                # 2 square pawn advance
+                if row == 6 and self.board[row-2][col] == '--':
+                    moves.append(Move((row, col), (row-2, col), self.board))
+            # diagonal capture left
+            if col-1 >= 0:
+                # check for enemy piece
+                if self.board[row-1][col-1][0] == 'b':
+                    moves.append(Move((row, col), (row-1, col-1), self.board))
+            # diagonal capture right
+            if col+1 <= 7:
+                # check for enemy piece
+                if self.board[row-1][col+1][0] == 'b':
+                    moves.append(Move((row, col), (row-1, col+1), self.board))
+
+        # black pawn moves
+        else:
+            # 1 square pawn advance
+            if self.board[row+1][col] == '--':
+                moves.append(Move((row, col), (row+1, col), self.board))
+                # 2 square pawn advance
+                if row == 1 and self.board[row+2][col] == '--':
+                    moves.append(Move((row, col), (row+2, col), self.board))
+            # diagonal capture right
+            if col-1 >= 0:
+                # check for enemy piece
+                if self.board[row+1][col-1][0] == 'w':
+                    moves.append(Move((row, col), (row+1, col-1), self.board))
+            # diagonal capture right
+            if col+1 <= 7:
+                # check for enemy piece
+                if self.board[row+1][col+1][0] == 'w':
+                    moves.append(Move((row, col), (row+1, col+1), self.board))
+
 
 
     # get all pawn moves for the Knight at board[row][col]
     # add moves to list
-    def getKnightMoves(row, col, moves):
+    def getKnightMoves(self, row, col, moves):
         pass
+
 
     # get all pawn moves for the Bishop at board[row][col]
     # add moves to list
-    def getBishopMoves(row, col, moves):
+    def getBishopMoves(self, row, col, moves):
         pass
+
 
     # get all pawn moves for the Rook at board[row][col]
     # add moves to list
-    def getRookMoves(row, col, moves):
+    def getRookMoves(self, row, col, moves):
         pass
+
 
     # get all pawn moves for the Queen at board[row][col]
     # add moves to list
-    def getQueenMoves(row, col, moves):
+    def getQueenMoves(self, row, col, moves):
         pass
+
 
     # get all pawn moves for the King at board[row][col]
     # add moves to list
-    def getKingMoves(row, col, moves):
+    def getKingMoves(self, row, col, moves):
         pass
     
 

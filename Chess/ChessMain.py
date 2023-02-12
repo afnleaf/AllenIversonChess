@@ -53,7 +53,15 @@ def main():
     # track player clicks, two tuples 
     playerClicks = []
     running = True
+    firstTime = True
     while running:
+        # stuff to print out the first time the loop gets run
+        if firstTime:
+            firstTime = False
+            if gs.whiteToMove:
+                print("white to move")
+            else:
+                print("black to move")
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
@@ -106,6 +114,8 @@ def main():
             # gen new set of valid moves
             validMoves = gs.getValidMoves()
             moveMade = False
+            # reset to print out who moves again
+            firstTime = True
 
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
