@@ -108,6 +108,7 @@ class GameState():
 
     # get all pawn moves for the Pawn at board[row][col]
     # add moves to list
+    # todo: pawn promotion, en-passant?
     def getPawnMoves(self, row, col, moves):
         # white pawn moves
         if self.whiteToMove:
@@ -148,12 +149,62 @@ class GameState():
                     moves.append(Move((row, col), (row+1, col+1), self.board))
 
 
-
     # get all pawn moves for the Knight at board[row][col]
     # add moves to list
     def getKnightMoves(self, row, col, moves):
-        pass
-
+        n = len(self.board)
+        # white knight moves
+        if self.whiteToMove:
+            # check up
+            if row-2 >= 0:
+                if col+1 < n and (self.board[row-2][col+1] == '--' or self.board[row-2][col+1][0] == 'b'):
+                    moves.append(Move((row, col), (row-2, col+1), self.board))
+                if col-1 >= 0 and (self.board[row-2][col-1] == '--' or self.board[row-2][col-1][0] == 'b' ):
+                    moves.append(Move((row, col), (row-2, col-1), self.board))
+            # check down
+            if row+2 < n:
+                if col+1 < n and (self.board[row+2][col+1] == '--' or self.board[row+2][col+1][0] == 'b'):
+                    moves.append(Move((row, col), (row+2, col+1), self.board))
+                if col-1 >= 0 and (self.board[row+2][col-1] == '--' or self.board[row+2][col-1][0] == 'b'):
+                    moves.append(Move((row, col), (row+2, col-1), self.board))
+            # check right
+            if col-2 >= 0:
+                if row-1 >= 0 and (self.board[row-1][col-2] == '--' or self.board[row-1][col-2][0] == 'b'):
+                    moves.append(Move((row, col), (row-1, col-2), self.board))
+                if row+1 < n and (self.board[row+1][col-2] == '--' or self.board[row+1][col-2][0] == 'b'):
+                    moves.append(Move((row, col), (row+1, col-2), self.board))
+            # check left
+            if col+2 < n:
+                if row-1 >= 0 and (self.board[row-1][col+2] == '--' or self.board[row-1][col+2][0] == 'b'):
+                    moves.append(Move((row, col), (row-1, col+2), self.board))
+                if row+1 < n and (self.board[row+1][col+2] == '--' or self.board[row+1][col+2][0] == 'b'):
+                    moves.append(Move((row, col), (row+1, col+2), self.board))
+        # black knight moves
+        else:
+            # check up
+            if row-2 >= 0:
+                if col+1 < n and (self.board[row-2][col+1] == '--' or self.board[row-2][col+1][0] == 'w'):
+                    moves.append(Move((row, col), (row-2, col+1), self.board))
+                if col-1 >= 0 and (self.board[row-2][col-1] == '--' or self.board[row-2][col-1][0] == 'w' ):
+                    moves.append(Move((row, col), (row-2, col-1), self.board))
+            # check down
+            if row+2 < n:
+                if col+1 < n and (self.board[row+2][col+1] == '--' or self.board[row+2][col+1][0] == 'w'):
+                    moves.append(Move((row, col), (row+2, col+1), self.board))
+                if col-1 >= 0 and (self.board[row+2][col-1] == '--' or self.board[row+2][col-1][0] == 'w'):
+                    moves.append(Move((row, col), (row+2, col-1), self.board))
+            # check right
+            if col-2 >= 0:
+                if row-1 >= 0 and (self.board[row-1][col-2] == '--' or self.board[row-1][col-2][0] == 'w'):
+                    moves.append(Move((row, col), (row-1, col-2), self.board))
+                if row+1 < n and (self.board[row+1][col-2] == '--' or self.board[row+1][col-2][0] == 'w'):
+                    moves.append(Move((row, col), (row+1, col-2), self.board))
+            # check left
+            if col+2 < n:
+                if row-1 >= 0 and (self.board[row-1][col+2] == '--' or self.board[row-1][col+2][0] == 'w'):
+                    moves.append(Move((row, col), (row-1, col+2), self.board))
+                if row+1 < n and (self.board[row+1][col+2] == '--' or self.board[row+1][col+2][0] == 'w'):
+                    moves.append(Move((row, col), (row+1, col+2), self.board))
 
     # get all pawn moves for the Bishop at board[row][col]
     # add moves to list
