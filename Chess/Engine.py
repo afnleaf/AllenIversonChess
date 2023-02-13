@@ -150,63 +150,19 @@ class GameState():
                     moves.append(Move((row, col), (row+1, col+1), self.board))
 
 
-    # get all moves for the Knight at board[row][col]
-    # add moves to list
-    # to:do refactor
+    # refactored chatGPT Code
+    # Instead of using if statements to check each possible move, we can create a list of tuples representing all possible moves for the knight. Then, we iterate over each offset and check if the corresponding square is a valid move for the knight. If it is, we append the move to the list of moves.
+    #Additionally, we can check if the destination square contains an enemy piece by comparing its color with the color of the knight's piece. We can simplify the logic by checking if the first character of the piece at the destination square is not the same as the knight's piece.
     def getKnightMoves(self, row, col, moves):
         n = len(self.board)
-        # white knight moves
-        if self.whiteToMove:
-            # check up
-            if row-2 >= 0:
-                if col+1 < n and (self.board[row-2][col+1] == '--' or self.board[row-2][col+1][0] == 'b'):
-                    moves.append(Move((row, col), (row-2, col+1), self.board))
-                if col-1 >= 0 and (self.board[row-2][col-1] == '--' or self.board[row-2][col-1][0] == 'b' ):
-                    moves.append(Move((row, col), (row-2, col-1), self.board))
-            # check down
-            if row+2 < n:
-                if col+1 < n and (self.board[row+2][col+1] == '--' or self.board[row+2][col+1][0] == 'b'):
-                    moves.append(Move((row, col), (row+2, col+1), self.board))
-                if col-1 >= 0 and (self.board[row+2][col-1] == '--' or self.board[row+2][col-1][0] == 'b'):
-                    moves.append(Move((row, col), (row+2, col-1), self.board))
-            # check right
-            if col-2 >= 0:
-                if row-1 >= 0 and (self.board[row-1][col-2] == '--' or self.board[row-1][col-2][0] == 'b'):
-                    moves.append(Move((row, col), (row-1, col-2), self.board))
-                if row+1 < n and (self.board[row+1][col-2] == '--' or self.board[row+1][col-2][0] == 'b'):
-                    moves.append(Move((row, col), (row+1, col-2), self.board))
-            # check left
-            if col+2 < n:
-                if row-1 >= 0 and (self.board[row-1][col+2] == '--' or self.board[row-1][col+2][0] == 'b'):
-                    moves.append(Move((row, col), (row-1, col+2), self.board))
-                if row+1 < n and (self.board[row+1][col+2] == '--' or self.board[row+1][col+2][0] == 'b'):
-                    moves.append(Move((row, col), (row+1, col+2), self.board))
-        # black knight moves
-        else:
-            # check up
-            if row-2 >= 0:
-                if col+1 < n and (self.board[row-2][col+1] == '--' or self.board[row-2][col+1][0] == 'w'):
-                    moves.append(Move((row, col), (row-2, col+1), self.board))
-                if col-1 >= 0 and (self.board[row-2][col-1] == '--' or self.board[row-2][col-1][0] == 'w' ):
-                    moves.append(Move((row, col), (row-2, col-1), self.board))
-            # check down
-            if row+2 < n:
-                if col+1 < n and (self.board[row+2][col+1] == '--' or self.board[row+2][col+1][0] == 'w'):
-                    moves.append(Move((row, col), (row+2, col+1), self.board))
-                if col-1 >= 0 and (self.board[row+2][col-1] == '--' or self.board[row+2][col-1][0] == 'w'):
-                    moves.append(Move((row, col), (row+2, col-1), self.board))
-            # check right
-            if col-2 >= 0:
-                if row-1 >= 0 and (self.board[row-1][col-2] == '--' or self.board[row-1][col-2][0] == 'w'):
-                    moves.append(Move((row, col), (row-1, col-2), self.board))
-                if row+1 < n and (self.board[row+1][col-2] == '--' or self.board[row+1][col-2][0] == 'w'):
-                    moves.append(Move((row, col), (row+1, col-2), self.board))
-            # check left
-            if col+2 < n:
-                if row-1 >= 0 and (self.board[row-1][col+2] == '--' or self.board[row-1][col+2][0] == 'w'):
-                    moves.append(Move((row, col), (row-1, col+2), self.board))
-                if row+1 < n and (self.board[row+1][col+2] == '--' or self.board[row+1][col+2][0] == 'w'):
-                    moves.append(Move((row, col), (row+1, col+2), self.board))
+        offsets = [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (1, -2), (-1, 2), (-1, -2)]
+
+        for offset in offsets:
+            x, y = row + offset[0], col + offset[1]
+            if 0 <= x < n and 0 <= y < n:
+                piece = self.board[x][y]
+                if piece == '--' or piece[0] != self.board[row][col][0]:
+                    moves.append(Move((row, col), (x, y), self.board))
 
     # get all diagonal moves for the Bishop at board[row][col]
     # add moves to list
@@ -226,306 +182,88 @@ class GameState():
         self.getHorizontal(row, col, moves)
         self.getVertical(row, col, moves)
 
-    # check all 8 squares for moves around the King at board[row][col]
-    # add moves to list
-    # to:do refactor
+
+    # refactored by ChatGPT
+    # This code replaces the original 8 if-statements with a nested loop that checks all the squares around the king. It also uses the variable color to avoid duplicating the if-statements for the white and black kings. Finally, it skips the current square (i.e., the king's position) to avoid adding a move to the same square.
     def getKingMoves(self, row, col, moves):
         n = len(self.board)
-        # white king moves
-        if self.whiteToMove:
-            # check up
-            if row-1 >= 0 and self.board[row-1][col][0] != 'w':
-                moves.append(Move((row, col), (row-1, col), self.board))
-            # check down
-            if row+1 < n and self.board[row+1][col][0] != 'w':
-                moves.append(Move((row, col), (row+1, col), self.board))
-            # check right
-            if col+1 < n and self.board[row][col+1][0] != 'w':
-                moves.append(Move((row, col), (row, col+1), self.board))
-            # check left
-            if col-1 >= 0 and self.board[row][col-1][0] != 'w':
-                moves.append(Move((row, col), (row, col-1), self.board))
+        color = 'w' if self.whiteToMove else 'b'
+        for r in range(row-1, row+2):
+            for c in range(col-1, col+2):
+                if r == row and c == col:  # ignore the current square
+                    continue
+                if 0 <= r < n and 0 <= c < n and self.board[r][c][0] != color:
+                    moves.append(Move((row, col), (r, c), self.board))
 
-            # check up right
-            if row-1 >= 0 and col+1 < n and self.board[row-1][col+1][0] != 'w':
-                moves.append(Move((row, col), (row-1, col+1), self.board))
-            # check up left
-            if row-1 >= 0 and col-1 >= 0 and self.board[row-1][col-1][0] != 'w':
-                moves.append(Move((row, col), (row-1, col-1), self.board))
-            # check down right
-            if row+1 < n and col+1 < n and self.board[row+1][col+1][0] != 'w':
-                moves.append(Move((row, col), (row+1, col+1), self.board))
-            # check down left
-            if row+1 < n and col-1 < n and self.board[row+1][col-1][0] != 'w':
-                moves.append(Move((row, col), (row+1, col-1), self.board))
-        # black king moves
-        else:
-            # check up
-            if row-1 >= 0 and self.board[row-1][col][0] != 'b':
-                moves.append(Move((row, col), (row-1, col), self.board))
-            # check down
-            if row+1 < n and self.board[row+1][col][0] != 'b':
-                moves.append(Move((row, col), (row+1, col), self.board))
-            # check right
-            if col+1 < n and self.board[row][col+1][0] != 'b':
-                moves.append(Move((row, col), (row, col+1), self.board))
-            # check left
-            if col-1 >= 0 and self.board[row][col-1][0] != 'b':
-                moves.append(Move((row, col), (row, col-1), self.board))
-
-            # check up right
-            if row-1 >= 0 and col+1 < n and self.board[row-1][col+1][0] != 'b':
-                moves.append(Move((row, col), (row-1, col+1), self.board))
-            # check up left
-            if row-1 >= 0 and col-1 >= 0 and self.board[row-1][col-1][0] != 'b':
-                moves.append(Move((row, col), (row-1, col-1), self.board))
-            # check down right
-            if row+1 < n and col+1 < n and self.board[row+1][col+1][0] != 'b':
-                moves.append(Move((row, col), (row+1, col+1), self.board))
-            # check down left
-            if row+1 < n and col-1 < n and self.board[row+1][col-1][0] != 'b':
-                moves.append(Move((row, col), (row+1, col-1), self.board))
-
-
-    # get diagonal possible moves for a piece
-    # to:do refactor
+    # ChatGPT
+    # This version uses a loop that iterates over all four diagonals, and then another loop inside each diagonal that generates moves in that diagonal. The loop ends when it hits the edge of the board or a piece. If the piece is an enemy piece, the function appends the move and stops the loop.
     def getDiagonal(self, row, col, moves):
-        n = len(self.board)
-
-        # white piece moves
-        if self.whiteToMove:
-            # check up and right
-            rminu = row - 1
-            cplus = col + 1
-            while rminu >= 0 and cplus < n:
-                piece = self.board[rminu][cplus]
+        for dr, dc in [(1, 1), (1, -1), (-1, 1), (-1, -1)]:
+            r, c = row + dr, col + dc
+            while 0 <= r < len(self.board) and 0 <= c < len(self.board[0]):
+                piece = self.board[r][c]
                 if piece == '--':
-                    moves.append(Move((row, col), (rminu, cplus), self.board))
-                elif piece[0] == 'b':
-                    moves.append(Move((row, col), (rminu, cplus), self.board))
+                    moves.append(Move((row, col), (r, c), self.board))
+                elif (self.whiteToMove and piece[0] == 'b') or (not self.whiteToMove and piece[0] == 'w'):
+                    moves.append(Move((row, col), (r, c), self.board))
                     break
-                elif piece[0] == 'w':
+                else:
                     break
-                rminu -= 1
-                cplus += 1
+                r += dr
+                c += dc
 
-            # check up and left
-            rminu = row - 1
-            cminu = col - 1
-            while rminu >= 0 and cminu < n:
-                piece = self.board[rminu][cminu]
-                if piece == '--':
-                    moves.append(Move((row, col), (rminu, cminu), self.board))
-                elif piece[0] == 'b':
-                    moves.append(Move((row, col), (rminu, cminu), self.board))
-                    break
-                elif piece[0] == 'w':
-                    break
-                rminu -= 1
-                cminu -= 1
-
-            # check down and right
-            rplus = row + 1
-            cplus = col + 1
-            while rplus < n and cplus < n:
-                piece = self.board[rplus][cplus]
-                if piece == '--':
-                    moves.append(Move((row, col), (rplus, cplus), self.board))
-                elif piece[0] == 'b':
-                    moves.append(Move((row, col), (rplus, cplus), self.board))
-                    break
-                elif piece[0] == 'w':
-                    break
-                rplus += 1
-                cplus += 1
-
-            # check down and left
-            rplus = row + 1
-            cminu = col - 1
-            while rplus < n and cminu >= 0:
-                piece = self.board[rplus][cminu]
-                if piece == '--':
-                    moves.append(Move((row, col), (rplus, cminu), self.board))
-                elif piece[0] == 'b':
-                    moves.append(Move((row, col), (rplus, cminu), self.board))
-                    break
-                elif piece[0] == 'w':
-                    break
-                rplus += 1
-                cminu -= 1
-
-        # black piece moves
-        else:
-            # check up and right
-            rminu = row - 1
-            cplus = col + 1
-            while rminu >= 0 and cplus < n:
-                piece = self.board[rminu][cplus]
-                if piece == '--':
-                    moves.append(Move((row, col), (rminu, cplus), self.board))
-                elif piece[0] == 'w':
-                    moves.append(Move((row, col), (rminu, cplus), self.board))
-                    break
-                elif piece[0] == 'b':
-                    break
-                rminu -= 1
-                cplus += 1
-
-            # check up and left
-            rminu = row - 1
-            cminu = col - 1
-            while rminu >= 0 and cminu < n:
-                piece = self.board[rminu][cminu]
-                if piece == '--':
-                    moves.append(Move((row, col), (rminu, cminu), self.board))
-                elif piece[0] == 'w':
-                    moves.append(Move((row, col), (rminu, cminu), self.board))
-                    break
-                elif piece[0] == 'b':
-                    break
-                rminu -= 1
-                cminu -= 1
-
-            # check down and right
-            rplus = row + 1
-            cplus = col + 1
-            while rplus < n and cplus < n:
-                piece = self.board[rplus][cplus]
-                if piece == '--':
-                    moves.append(Move((row, col), (rplus, cplus), self.board))
-                elif piece[0] == 'w':
-                    moves.append(Move((row, col), (rplus, cplus), self.board))
-                    break
-                elif piece[0] == 'b':
-                    break
-                rplus += 1
-                cplus += 1
-
-            # check down and left
-            rplus = row + 1
-            cminu = col - 1
-            while rplus < n and cminu >= 0:
-                piece = self.board[rplus][cminu]
-                if piece == '--':
-                    moves.append(Move((row, col), (rplus, cminu), self.board))
-                elif piece[0] == 'w':
-                    moves.append(Move((row, col), (rplus, cminu), self.board))
-                    break
-                elif piece[0] == 'b':
-                    break
-                rplus += 1
-                cminu -= 1
-
-    # get horizontal possible moves for a piece
-    # to:do refactor
+    
+    # ChatGPT
+    # The code has been refactored to use fewer repeated blocks of code and to make use of the range function to loop over the columns to the left and right of the starting position. The enemy color is now determined once and used throughout the method. Additionally, the comments have been removed as they did not add any value to the code.
     def getHorizontal(self, row, col, moves):
         n = len(self.board)
-        # white piece moves
-        if self.whiteToMove:
-            #print("white piece at: " + str(row) + "," + str(col))
-            # check right
-            for i in range(col+1, n):
-                piece = self.board[row][i]
-                #print("right: " + piece)
-                if piece == '--':
-                    moves.append(Move((row, col), (row, i), self.board))
-                elif piece[0] == 'b':
-                    moves.append(Move((row, col), (row, i), self.board))
-                    break
-                elif piece[0] == 'w':
-                    break
-            # check left
-            for i in reversed(range(col)):
-                piece = self.board[row][i]
-                #print("left: " + piece)
-                if piece == '--':
-                    moves.append(Move((row, col), (row, i), self.board))
-                elif piece[0] == 'b':
-                    moves.append(Move((row, col), (row, i), self.board))
-                    break
-                elif piece[0] == 'w':
-                    break
-        # black piece moves
-        else:
-            #print("black rook at: " + str(row) + "," + str(col))
-            # check right
-            for i in range(col+1, n):
-                piece = self.board[row][i]
-                #print("right: " + piece)
-                if piece == '--':
-                    moves.append(Move((row, col), (row, i), self.board))
-                elif piece[0] == 'w':
-                    moves.append(Move((row, col), (row, i), self.board))
-                    break
-                elif piece[0] == 'b':
-                    break
-            # check left
-            for i in reversed(range(col)):
-                piece = self.board[row][i]
-                #print("left: " + piece)
-                if piece == '--':
-                    moves.append(Move((row, col), (row, i), self.board))
-                elif piece[0] == 'w':
-                    moves.append(Move((row, col), (row, i), self.board))
-                    break
-                elif piece[0] == 'b':
-                    break
-    
-    # get vertical possible moves for a piece
-    # to:do refactor
+        # get the range of columns to check
+        left_range = range(col - 1, -1, -1)
+        right_range = range(col + 1, n)
+        # define the enemy color
+        enemy_color = 'b' if self.whiteToMove else 'w'
+        # check moves to the right
+        for i in right_range:
+            piece = self.board[row][i]
+            if piece == '--':
+                moves.append(Move((row, col), (row, i), self.board))
+            elif piece[0] == enemy_color:
+                moves.append(Move((row, col), (row, i), self.board))
+                break
+            else:
+                break
+        # check moves to the left
+        for i in left_range:
+            piece = self.board[row][i]
+            if piece == '--':
+                moves.append(Move((row, col), (row, i), self.board))
+            elif piece[0] == enemy_color:
+                moves.append(Move((row, col), (row, i), self.board))
+                break
+            else:
+                break
+
+    # chatGPT
+    #This refactored version uses a loop to iterate over the two possible directions (up and down), and for each direction, it uses another loop to explore all the possible squares along that direction. The inner loop keeps track of the current position using the variables r and c, which are initialized to the position immediately above or below the starting square, depending on the direction. The loop continues as long as the current position is within the board boundaries, and updates the position by adding the direction vector to (r, c) at each iteration.
+    #Inside the inner loop, the function checks the piece at the current position and appends a new Move object to the moves list if the square is empty or occupied by an opponent's piece. If the square is occupied by a piece of the same color, the loop is broken to avoid exploring squares beyond that piece.
     def getVertical(self, row, col, moves):
         n = len(self.board)
-        # white piece moves
+        directions = [(1, 0), (-1, 0)]
         if self.whiteToMove:
-            #print("white rook at: " + str(row) + "," + str(col))
-            # check up
-            for i in reversed(range(row)):
-                piece = self.board[i][col]
-                #print("up: " + piece)
+            directions = list(reversed(directions))
+        for direction in directions:
+            r, c = row + direction[0], col + direction[1]
+            while 0 <= r < n and 0 <= c < n:
+                piece = self.board[r][c]
                 if piece == '--':
-                    moves.append(Move((row, col), (i, col), self.board))
-                elif piece[0] == 'b':
-                    moves.append(Move((row, col), (i, col), self.board))
+                    moves.append(Move((row, col), (r, c), self.board))
+                elif piece[0] != self.board[row][col][0]:
+                    moves.append(Move((row, col), (r, c), self.board))
                     break
-                elif piece[0] == 'w':
+                else:
                     break
-            # check down
-            for i in range(row+1, n):
-                piece = self.board[i][col]
-                #print("down: " + piece)
-                if piece == '--':
-                    moves.append(Move((row, col), (i, col), self.board))
-                elif piece[0] == 'b':
-                    moves.append(Move((row, col), (i, col), self.board))
-                    break
-                elif piece[0] == 'w':
-                    break
-        # black piece moves
-        else:
-            #print("black rook at: " + str(row) + "," + str(col))
-            # check up
-            for i in reversed(range(row)):
-                piece = self.board[i][col]
-                #print("up: " + piece)
-                if piece == '--':
-                    moves.append(Move((row, col), (i, col), self.board))
-                elif piece[0] == 'w':
-                    moves.append(Move((row, col), (i, col), self.board))
-                    break
-                elif piece[0] == 'b':
-                    break
-            # check down
-            for i in range(row+1, n):
-                piece = self.board[i][col]
-                #print("down: " + piece)
-                if piece == '--':
-                    moves.append(Move((row, col), (i, col), self.board))
-                elif piece[0] == 'w':
-                    moves.append(Move((row, col), (i, col), self.board))
-                    break
-                elif piece[0] == 'b':
-                    break
-    
+                r += direction[0]
+                c += direction[1]
 
 
 # for moves
