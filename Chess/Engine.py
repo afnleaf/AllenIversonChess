@@ -341,7 +341,104 @@ class GameState():
     # get all pawn moves for the Rook at board[row][col]
     # add moves to list
     def getRookMoves(self, row, col, moves):
-        pass
+        n = len(self.board)
+        # white rook moves
+        if self.whiteToMove:
+            #print("white rook at: " + str(row) + "," + str(col))
+            # check right
+            for i in range(col+1, n):
+                piece = self.board[row][i]
+                #print("right: " + piece)
+                if piece == '--':
+                    moves.append(Move((row, col), (row, i), self.board))
+                elif piece[0] == 'b':
+                    moves.append(Move((row, col), (row, i), self.board))
+                    break
+                elif piece[0] == 'w':
+                    break
+            # check left
+            for i in reversed(range(col)):
+                piece = self.board[row][i]
+                #print("left: " + piece)
+                if piece == '--':
+                    moves.append(Move((row, col), (row, i), self.board))
+                elif piece[0] == 'b':
+                    moves.append(Move((row, col), (row, i), self.board))
+                    break
+                elif piece[0] == 'w':
+                    break
+            # check up
+            for i in reversed(range(row)):
+                piece = self.board[i][col]
+                #print("up: " + piece)
+                if piece == '--':
+                    moves.append(Move((row, col), (i, col), self.board))
+                elif piece[0] == 'b':
+                    moves.append(Move((row, col), (i, col), self.board))
+                    break
+                elif piece[0] == 'w':
+                    break
+            # check down
+            for i in range(row+1, n):
+                piece = self.board[i][col]
+                #print("down: " + piece)
+                if piece == '--':
+                    moves.append(Move((row, col), (i, col), self.board))
+                elif piece[0] == 'b':
+                    moves.append(Move((row, col), (i, col), self.board))
+                    break
+                elif piece[0] == 'w':
+                    break
+        # black rook moves
+        else:
+            #print("black rook at: " + str(row) + "," + str(col))
+            # check right
+            for i in range(col+1, n):
+                piece = self.board[row][i]
+                #print("right: " + piece)
+                if piece == '--':
+                    moves.append(Move((row, col), (row, i), self.board))
+                elif piece[0] == 'w':
+                    moves.append(Move((row, col), (row, i), self.board))
+                    break
+                elif piece[0] == 'b':
+                    break
+            # check left
+            for i in reversed(range(col)):
+                piece = self.board[row][i]
+                #print("left: " + piece)
+                if piece == '--':
+                    moves.append(Move((row, col), (row, i), self.board))
+                elif piece[0] == 'w':
+                    moves.append(Move((row, col), (row, i), self.board))
+                    break
+                elif piece[0] == 'b':
+                    break
+            # check up
+            for i in reversed(range(row)):
+                piece = self.board[i][col]
+                #print("up: " + piece)
+                if piece == '--':
+                    moves.append(Move((row, col), (i, col), self.board))
+                elif piece[0] == 'w':
+                    moves.append(Move((row, col), (i, col), self.board))
+                    break
+                elif piece[0] == 'b':
+                    break
+            # check down
+            for i in range(row+1, n):
+                piece = self.board[i][col]
+                #print("down: " + piece)
+                if piece == '--':
+                    moves.append(Move((row, col), (i, col), self.board))
+                elif piece[0] == 'w':
+                    moves.append(Move((row, col), (i, col), self.board))
+                    break
+                elif piece[0] == 'b':
+                    break
+                
+
+
 
 
     # get all pawn moves for the Queen at board[row][col]

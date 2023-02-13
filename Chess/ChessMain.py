@@ -160,7 +160,6 @@ def printBoard(board):
     n = len(board)
     for i in range(n + 1):
         if i < 8:
-            #print(str(i + ((i+1)*8)), end = ' ')
             print(str(Engine.Move.rowsToRanks[i]), end = ' ')
             for j in range(n):
                 print(board[i][j], end = ' ')
