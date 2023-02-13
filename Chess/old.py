@@ -1,3 +1,46 @@
+    # get all pawn moves for the Pawn at board[row][col]
+    # add moves to list
+    # todo: pawn promotion, en-passant?
+    def getPawnMoves_old(self, row, col, moves):
+        n = len(self.board)
+        # white pawn moves
+        if self.whiteToMove:
+            # 1 square pawn advance
+            if self.board[row-1][col] == '--':
+                moves.append(Move((row, col), (row-1, col), self.board))
+                # 2 square pawn advance
+                if row == 6 and self.board[row-2][col] == '--':
+                    moves.append(Move((row, col), (row-2, col), self.board))
+            # diagonal capture left
+            if col-1 >= 0:
+                # check for enemy piece
+                if self.board[row-1][col-1][0] == 'b':
+                    moves.append(Move((row, col), (row-1, col-1), self.board))
+            # diagonal capture right
+            if col+1 < n:
+                # check for enemy piece
+                if self.board[row-1][col+1][0] == 'b':
+                    moves.append(Move((row, col), (row-1, col+1), self.board))
+
+        # black pawn moves
+        else:
+            # 1 square pawn advance
+            if self.board[row+1][col] == '--':
+                moves.append(Move((row, col), (row+1, col), self.board))
+                # 2 square pawn advance
+                if row == 1 and self.board[row+2][col] == '--':
+                    moves.append(Move((row, col), (row+2, col), self.board))
+            # diagonal capture right
+            if col-1 >= 0:
+                # check for enemy piece
+                if self.board[row+1][col-1][0] == 'w':
+                    moves.append(Move((row, col), (row+1, col-1), self.board))
+            # diagonal capture right
+            if col+1 < n:
+                # check for enemy piece
+                if self.board[row+1][col+1][0] == 'w':
+                    moves.append(Move((row, col), (row+1, col+1), self.board))
+
 # get all moves for the Knight at board[row][col]
 # add moves to list
 # to:do refactor

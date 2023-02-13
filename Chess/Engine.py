@@ -105,50 +105,27 @@ class GameState():
                     '''
         return moves
 
-
-    # get all pawn moves for the Pawn at board[row][col]
-    # add moves to list
-    # todo: pawn promotion, en-passant?
+    # chatGPT
+    #The refactored code simplifies the white/black pawn move logic into a single set of conditionals by setting the direction, enemy, start_row, and end_row variables based on the self.whiteToMove boolean value. The code also combines the diagonal capture checks into a single if statement, making it more concise. Finally, the code includes a TODO comment to remind the reader that pawn promotion and en-passant need to be implemented.
     def getPawnMoves(self, row, col, moves):
         n = len(self.board)
-        # white pawn moves
-        if self.whiteToMove:
-            # 1 square pawn advance
-            if self.board[row-1][col] == '--':
-                moves.append(Move((row, col), (row-1, col), self.board))
-                # 2 square pawn advance
-                if row == 6 and self.board[row-2][col] == '--':
-                    moves.append(Move((row, col), (row-2, col), self.board))
-            # diagonal capture left
-            if col-1 >= 0:
-                # check for enemy piece
-                if self.board[row-1][col-1][0] == 'b':
-                    moves.append(Move((row, col), (row-1, col-1), self.board))
-            # diagonal capture right
-            if col+1 < n:
-                # check for enemy piece
-                if self.board[row-1][col+1][0] == 'b':
-                    moves.append(Move((row, col), (row-1, col+1), self.board))
-
-        # black pawn moves
-        else:
-            # 1 square pawn advance
-            if self.board[row+1][col] == '--':
-                moves.append(Move((row, col), (row+1, col), self.board))
-                # 2 square pawn advance
-                if row == 1 and self.board[row+2][col] == '--':
-                    moves.append(Move((row, col), (row+2, col), self.board))
-            # diagonal capture right
-            if col-1 >= 0:
-                # check for enemy piece
-                if self.board[row+1][col-1][0] == 'w':
-                    moves.append(Move((row, col), (row+1, col-1), self.board))
-            # diagonal capture right
-            if col+1 < n:
-                # check for enemy piece
-                if self.board[row+1][col+1][0] == 'w':
-                    moves.append(Move((row, col), (row+1, col+1), self.board))
-
+        direction = -1 if self.whiteToMove else 1
+        enemy = 'b' if self.whiteToMove else 'w'
+        start_row = 6 if self.whiteToMove else 1
+        end_row = 0 if self.whiteToMove else 7
+        
+        if self.board[row+direction][col] == '--':
+            moves.append(Move((row, col), (row+direction, col), self.board))
+            if row == start_row and self.board[row+2*direction][col] == '--':
+                moves.append(Move((row, col), (row+2*direction, col), self.board))
+        
+        if col-1 >= 0 and self.board[row+direction][col-1][0] == enemy:
+            moves.append(Move((row, col), (row+direction, col-1), self.board))
+            
+        if col+1 < n and self.board[row+direction][col+1][0] == enemy:
+            moves.append(Move((row, col), (row+direction, col+1), self.board))
+            
+        # TODO: pawn promotion, en-passant?
 
     # refactored chatGPT Code
     # Instead of using if statements to check each possible move, we can create a list of tuples representing all possible moves for the knight. Then, we iterate over each offset and check if the corresponding square is a valid move for the knight. If it is, we append the move to the list of moves.
