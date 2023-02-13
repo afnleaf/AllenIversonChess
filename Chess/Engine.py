@@ -150,7 +150,7 @@ class GameState():
                     moves.append(Move((row, col), (row+1, col+1), self.board))
 
 
-    # get all pawn moves for the Knight at board[row][col]
+    # get all moves for the Knight at board[row][col]
     # add moves to list
     # to:do refactor
     def getKnightMoves(self, row, col, moves):
@@ -208,12 +208,91 @@ class GameState():
                 if row+1 < n and (self.board[row+1][col+2] == '--' or self.board[row+1][col+2][0] == 'w'):
                     moves.append(Move((row, col), (row+1, col+2), self.board))
 
-    # get all pawn moves for the Bishop at board[row][col]
+    # get all diagonal moves for the Bishop at board[row][col]
+    # add moves to list
+    def getBishopMoves(self, row, col, moves):
+        self.getDiagonal(row, col, moves)
+
+    # get all horizontal and vertical moves for the Rook at board[row][col]
+    # add moves to list
+    def getRookMoves(self, row, col, moves):
+        self.getHorizontal(row, col, moves)
+        self.getVertical(row, col, moves)
+                
+    # get all diagonal, horizontal and vertical moves for the Queen at board[row][col]
+    # add moves to list
+    def getQueenMoves(self, row, col, moves):
+        self.getDiagonal(row, col, moves)
+        self.getHorizontal(row, col, moves)
+        self.getVertical(row, col, moves)
+
+    # check all 8 squares for moves around the King at board[row][col]
     # add moves to list
     # to:do refactor
-    def getBishopMoves(self, row, col, moves):
+    def getKingMoves(self, row, col, moves):
         n = len(self.board)
-        # white bishop moves
+        # white king moves
+        if self.whiteToMove:
+            # check up
+            if row-1 >= 0 and self.board[row-1][col][0] != 'w':
+                moves.append(Move((row, col), (row-1, col), self.board))
+            # check down
+            if row+1 < n and self.board[row+1][col][0] != 'w':
+                moves.append(Move((row, col), (row+1, col), self.board))
+            # check right
+            if col+1 < n and self.board[row][col+1][0] != 'w':
+                moves.append(Move((row, col), (row, col+1), self.board))
+            # check left
+            if col-1 >= 0 and self.board[row][col-1][0] != 'w':
+                moves.append(Move((row, col), (row, col-1), self.board))
+
+            # check up right
+            if row-1 >= 0 and col+1 < n and self.board[row-1][col+1][0] != 'w':
+                moves.append(Move((row, col), (row-1, col+1), self.board))
+            # check up left
+            if row-1 >= 0 and col-1 >= 0 and self.board[row-1][col-1][0] != 'w':
+                moves.append(Move((row, col), (row-1, col-1), self.board))
+            # check down right
+            if row+1 < n and col+1 < n and self.board[row+1][col+1][0] != 'w':
+                moves.append(Move((row, col), (row+1, col+1), self.board))
+            # check down left
+            if row+1 < n and col-1 < n and self.board[row+1][col-1][0] != 'w':
+                moves.append(Move((row, col), (row+1, col-1), self.board))
+        # black king moves
+        else:
+            # check up
+            if row-1 >= 0 and self.board[row-1][col][0] != 'b':
+                moves.append(Move((row, col), (row-1, col), self.board))
+            # check down
+            if row+1 < n and self.board[row+1][col][0] != 'b':
+                moves.append(Move((row, col), (row+1, col), self.board))
+            # check right
+            if col+1 < n and self.board[row][col+1][0] != 'b':
+                moves.append(Move((row, col), (row, col+1), self.board))
+            # check left
+            if col-1 >= 0 and self.board[row][col-1][0] != 'b':
+                moves.append(Move((row, col), (row, col-1), self.board))
+
+            # check up right
+            if row-1 >= 0 and col+1 < n and self.board[row-1][col+1][0] != 'b':
+                moves.append(Move((row, col), (row-1, col+1), self.board))
+            # check up left
+            if row-1 >= 0 and col-1 >= 0 and self.board[row-1][col-1][0] != 'b':
+                moves.append(Move((row, col), (row-1, col-1), self.board))
+            # check down right
+            if row+1 < n and col+1 < n and self.board[row+1][col+1][0] != 'b':
+                moves.append(Move((row, col), (row+1, col+1), self.board))
+            # check down left
+            if row+1 < n and col-1 < n and self.board[row+1][col-1][0] != 'b':
+                moves.append(Move((row, col), (row+1, col-1), self.board))
+
+
+    # get diagonal possible moves for a piece
+    # to:do refactor
+    def getDiagonal(self, row, col, moves):
+        n = len(self.board)
+
+        # white piece moves
         if self.whiteToMove:
             # check up and right
             rminu = row - 1
@@ -275,7 +354,7 @@ class GameState():
                 rplus += 1
                 cminu -= 1
 
-        # black bishop moves
+        # black piece moves
         else:
             # check up and right
             rminu = row - 1
@@ -337,14 +416,13 @@ class GameState():
                 rplus += 1
                 cminu -= 1
 
-
-    # get all pawn moves for the Rook at board[row][col]
-    # add moves to list
-    def getRookMoves(self, row, col, moves):
+    # get horizontal possible moves for a piece
+    # to:do refactor
+    def getHorizontal(self, row, col, moves):
         n = len(self.board)
-        # white rook moves
+        # white piece moves
         if self.whiteToMove:
-            #print("white rook at: " + str(row) + "," + str(col))
+            #print("white piece at: " + str(row) + "," + str(col))
             # check right
             for i in range(col+1, n):
                 piece = self.board[row][i]
@@ -367,29 +445,7 @@ class GameState():
                     break
                 elif piece[0] == 'w':
                     break
-            # check up
-            for i in reversed(range(row)):
-                piece = self.board[i][col]
-                #print("up: " + piece)
-                if piece == '--':
-                    moves.append(Move((row, col), (i, col), self.board))
-                elif piece[0] == 'b':
-                    moves.append(Move((row, col), (i, col), self.board))
-                    break
-                elif piece[0] == 'w':
-                    break
-            # check down
-            for i in range(row+1, n):
-                piece = self.board[i][col]
-                #print("down: " + piece)
-                if piece == '--':
-                    moves.append(Move((row, col), (i, col), self.board))
-                elif piece[0] == 'b':
-                    moves.append(Move((row, col), (i, col), self.board))
-                    break
-                elif piece[0] == 'w':
-                    break
-        # black rook moves
+        # black piece moves
         else:
             #print("black rook at: " + str(row) + "," + str(col))
             # check right
@@ -414,6 +470,39 @@ class GameState():
                     break
                 elif piece[0] == 'b':
                     break
+    
+    # get vertical possible moves for a piece
+    # to:do refactor
+    def getVertical(self, row, col, moves):
+        n = len(self.board)
+        # white piece moves
+        if self.whiteToMove:
+            #print("white rook at: " + str(row) + "," + str(col))
+            # check up
+            for i in reversed(range(row)):
+                piece = self.board[i][col]
+                #print("up: " + piece)
+                if piece == '--':
+                    moves.append(Move((row, col), (i, col), self.board))
+                elif piece[0] == 'b':
+                    moves.append(Move((row, col), (i, col), self.board))
+                    break
+                elif piece[0] == 'w':
+                    break
+            # check down
+            for i in range(row+1, n):
+                piece = self.board[i][col]
+                #print("down: " + piece)
+                if piece == '--':
+                    moves.append(Move((row, col), (i, col), self.board))
+                elif piece[0] == 'b':
+                    moves.append(Move((row, col), (i, col), self.board))
+                    break
+                elif piece[0] == 'w':
+                    break
+        # black piece moves
+        else:
+            #print("black rook at: " + str(row) + "," + str(col))
             # check up
             for i in reversed(range(row)):
                 piece = self.board[i][col]
@@ -436,21 +525,6 @@ class GameState():
                     break
                 elif piece[0] == 'b':
                     break
-                
-
-
-
-
-    # get all pawn moves for the Queen at board[row][col]
-    # add moves to list
-    def getQueenMoves(self, row, col, moves):
-        pass
-
-
-    # get all pawn moves for the King at board[row][col]
-    # add moves to list
-    def getKingMoves(self, row, col, moves):
-        pass
     
 
 
