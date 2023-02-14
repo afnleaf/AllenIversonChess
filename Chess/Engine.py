@@ -109,23 +109,29 @@ class GameState():
     #The refactored code simplifies the white/black pawn move logic into a single set of conditionals by setting the direction, enemy, start_row, and end_row variables based on the self.whiteToMove boolean value. The code also combines the diagonal capture checks into a single if statement, making it more concise. Finally, the code includes a TODO comment to remind the reader that pawn promotion and en-passant need to be implemented.
     def getPawnMoves(self, row, col, moves):
         n = len(self.board)
+        # so that we can swap what direction the pawn is facing
         direction = -1 if self.whiteToMove else 1
-        enemy = 'b' if self.whiteToMove else 'w'
+        # for two move forward
         start_row = 6 if self.whiteToMove else 1
+        # for pawn promotion
         end_row = 0 if self.whiteToMove else 7
         
+        # forward one square
         if self.board[row+direction][col] == '--':
             moves.append(Move((row, col), (row+direction, col), self.board))
+            # forward two squares
             if row == start_row and self.board[row+2*direction][col] == '--':
                 moves.append(Move((row, col), (row+2*direction, col), self.board))
         
+        enemy = 'b' if self.whiteToMove else 'w'
+        # diagonal left
         if col-1 >= 0 and self.board[row+direction][col-1][0] == enemy:
             moves.append(Move((row, col), (row+direction, col-1), self.board))
-            
+        # diagonal right
         if col+1 < n and self.board[row+direction][col+1][0] == enemy:
             moves.append(Move((row, col), (row+direction, col+1), self.board))
             
-        # TODO: pawn promotion, en-passant?
+        # TODO: pawn promotion, en-passant not allowed
 
     # refactored chatGPT Code
     # Instead of using if statements to check each possible move, we can create a list of tuples representing all possible moves for the knight. Then, we iterate over each offset and check if the corresponding square is a valid move for the knight. If it is, we append the move to the list of moves.
@@ -195,26 +201,28 @@ class GameState():
     def getHorizontal(self, row, col, moves):
         n = len(self.board)
         # get the range of columns to check
-        left_range = range(col - 1, -1, -1)
-        right_range = range(col + 1, n)
+        #left_range = range(col - 1, -1, -1)
+        #right_range = range(col + 1, n)
         # define the enemy color
-        enemy_color = 'b' if self.whiteToMove else 'w'
+        enemy = 'b' if self.whiteToMove else 'w'
         # check moves to the right
-        for i in right_range:
+        #for i in right_range:
+        for i in range(col + 1, n):
             piece = self.board[row][i]
             if piece == '--':
                 moves.append(Move((row, col), (row, i), self.board))
-            elif piece[0] == enemy_color:
+            elif piece[0] == enemy:
                 moves.append(Move((row, col), (row, i), self.board))
                 break
             else:
                 break
         # check moves to the left
-        for i in left_range:
+        #for i in left_range:
+        for i in range(col - 1, -1, -1):
             piece = self.board[row][i]
             if piece == '--':
                 moves.append(Move((row, col), (row, i), self.board))
-            elif piece[0] == enemy_color:
+            elif piece[0] == enemy:
                 moves.append(Move((row, col), (row, i), self.board))
                 break
             else:
