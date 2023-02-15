@@ -50,6 +50,7 @@ def main():
     
     # keep track of last square clicked tuple(row, col)
     squareSelected = ()
+    moveKeyboardIn = []
     # track player clicks, two tuples 
     playerClicks = []
     running = True
@@ -103,13 +104,66 @@ def main():
                 # undo when z is pressed
                 if e.key == p.K_z:
                     gs.undoMove()
-
                     # prevent this from printing again
                     #draw on console again
                     print("undo")
                     printBoard(gs.board)
                     #validMoves = gs.getValidMoves()
                     moveMade = True
+                # some turbo mad shit
+                if e.key == p.K_RETURN:
+                    print()
+                    print("commit move")
+                    print(moveKeyboardIn)
+                    moveKeyboardIn.clear()
+                if e.key == p.K_a:
+                    print('a', end='')
+                    moveKeyboardIn.append('a')
+                if e.key == p.K_b:
+                    print('b', end='')
+                    moveKeyboardIn.append('b')
+                if e.key == p.K_c:
+                    print('c', end='')
+                    moveKeyboardIn.append('c')
+                if e.key == p.K_d:
+                    print('d', end='')
+                    moveKeyboardIn.append('d')
+                if e.key == p.K_e:
+                    print('e', end='')
+                    moveKeyboardIn.append('e')
+                if e.key == p.K_f:
+                    print('f', end='')
+                    moveKeyboardIn.append('f')
+                if e.key == p.K_g:
+                    print('g', end='')
+                    moveKeyboardIn.append('g')
+                if e.key == p.K_h:
+                    print('h', end='')
+                    moveKeyboardIn.append('h')
+                if e.key == p.K_1:
+                    print('1')
+                    moveKeyboardIn.append('1')
+                if e.key == p.K_2:
+                    print('2')
+                    moveKeyboardIn.append('2')
+                if e.key == p.K_3:
+                    print('3')
+                    moveKeyboardIn.append('3')
+                if e.key == p.K_4:
+                    print('4')
+                    moveKeyboardIn.append('4')
+                if e.key == p.K_5:
+                    print('5')
+                    moveKeyboardIn.append('5')
+                if e.key == p.K_6:
+                    print('6')
+                    moveKeyboardIn.append('6')
+                if e.key == p.K_7:
+                    print('7')
+                    moveKeyboardIn.append('7')
+                if e.key == p.K_8:
+                    print('8')
+                    moveKeyboardIn.append('8')
 
         if moveMade:
             # gen new set of valid moves
