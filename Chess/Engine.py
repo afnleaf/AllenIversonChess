@@ -64,6 +64,12 @@ class GameState():
             # switch turns
             self.whiteToMove = not self.whiteToMove
 
+    # print the move log to console
+    def printMoveLog(self):
+        i = 1
+        for move in self.moveLog:
+            print(str(i) + ". " + move.getChessNotation())
+            i += 1
 
     # all moves considering checks
     # ex pawn cant move if the pawn is pinned to a check by an opposing piece

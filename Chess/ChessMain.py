@@ -45,7 +45,7 @@ def main():
     # do this once before the game while loop
     loadImages()
 
-    #draw on CLI first time
+    #draw on console first time
     printBoard(gs.board)
     
     # keep track of last square clicked tuple(row, col)
@@ -53,20 +53,21 @@ def main():
     # track player clicks, two tuples 
     playerClicks = []
     running = True
-    firstTime = True
+    playerTurnChange = True
     while running:
         # stuff to print out the first time the loop gets run
-        if firstTime:
-            firstTime = False
+        if playerTurnChange:
+            playerTurnChange = False
             if gs.whiteToMove:
                 print("white to move")
             else:
                 print("black to move")
         for e in p.event.get():
-            if e.type == p.QUIT:
+            if (e.type == p.QUIT) or (e.type == p.KEYDOWN and e.key == p.K_q):
                 running = False
                 print("Move log:")
-                print(gs.moveLog)
+                gs.printMoveLog()
+                #print(gs.moveLog)
             # mouse input
             elif e.type == p.MOUSEBUTTONDOWN:
                 # get (x,y) location of the mouse
@@ -90,7 +91,7 @@ def main():
                     if move in validMoves:
                         gs.makeMove(move)
                         moveMade = True
-                        # draw to cli
+                        # draw to console
                         printBoard(gs.board)
                     else:
                         print("invalid move")
@@ -104,7 +105,7 @@ def main():
                     gs.undoMove()
 
                     # prevent this from printing again
-                    #draw on CLI again
+                    #draw on console again
                     print("undo")
                     printBoard(gs.board)
                     #validMoves = gs.getValidMoves()
@@ -115,7 +116,7 @@ def main():
             validMoves = gs.getValidMoves()
             moveMade = False
             # reset to print out who moves again
-            firstTime = True
+            playerTurnChange = True
 
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
@@ -156,21 +157,28 @@ def drawPieces(screen, board):
 
 
 # draw the pieces to the command line
-def printBoard(board):
+def printBoard(board):    
+    # because we call it twice letters
+    def printLetters():
+        print("  ", end='')
+        for letter in string.ascii_uppercase:
+            print(letter + ' ', end = ' ')
+            if(letter == 'H'):
+                break
+        print()
+
     n = len(board)
+    printLetters()
     for i in range(n + 1):
         if i < 8:
             print(str(Engine.Move.rowsToRanks[i]), end = ' ')
             for j in range(n):
                 print(board[i][j], end = ' ')
+            print(str(Engine.Move.rowsToRanks[i]), end = ' ') 
             print()
-    # add letters at bottom
-    print("  ", end="")
-    for letter in string.ascii_uppercase:
-        print(letter + ' ', end = ' ')
-        if(letter == 'H'):
-            break
+    printLetters()
     print('', end = '\n\n')
+
 
 # default notation
 if __name__ == "__main__":
