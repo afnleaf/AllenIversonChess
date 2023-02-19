@@ -7,6 +7,7 @@ import numpy as np
 
 
 class GameState():
+
     def __init__(self):
         # consider numpy arrays for increased AI speed
         # 8x8 2D list
@@ -39,7 +40,16 @@ class GameState():
 
         # track moves
         self.moveLog = []
+
+        # keep track of king's location for efficiency
+        self.whiteKingLocation = (7,4)
+        self.blackKingLocation = (0,4)
+
+        # other game state stuff
+        self.checkMake = False
+        self.staleMate = False
     
+
     # take a move and execute it
     # castling and pawn promotion not implemented, could also add en-passant
     def makeMove(self, move):
@@ -49,6 +59,11 @@ class GameState():
         self.moveLog.append(move)
         # switch turns
         self.whiteToMove = not self.whiteToMove
+        # update king's location
+        if move.pieceMoved == 'wK':
+            self.whiteKingLocation = (move.endRow, move.endCol)
+        elif move.pieceMoved == 'bK':
+            self.blackKingLocation = (move.endRow, move.endCol)
 
 
     # undo last move made
@@ -63,6 +78,12 @@ class GameState():
             self.board[move.endRow][move.endCol] = move.pieceCaptured
             # switch turns
             self.whiteToMove = not self.whiteToMove
+            # undo the update to king's location
+            if move.pieceMoved == 'wK':
+                self.whiteKingLocation = (move.startRow, move.startCol)
+            elif move.pieceMoved == 'bK':
+                self.blackKingLocation = (move.startRow, move.startCol)
+
 
     # print the move log to console
     def printMoveLog(self):
@@ -71,12 +92,57 @@ class GameState():
             print(str(i) + ". " + move.getChessNotation())
             i += 1
 
+
     # all moves considering checks
     # ex pawn cant move if the pawn is pinned to a check by an opposing piece
     # player cant put themselves in check
     def getValidMoves(self):
-        # not checking for checks rn
-        return self.getAllPossibleMoves()
+        # generate all possible moves whether they are valid or not
+        moves = self.getAllPossibleMoves()
+        # make each move
+        # move through the list backwards
+        for i in range(len(moves)-1, -1 , -1):
+            self.makeMove(moves[i])
+            # we need to switch back after we do makeMove()
+            self.whiteToMove = not self.whiteToMove
+            # gen all opp's moves, see if they attack your king
+            if self.inCheck():
+                # if the move puts us in check, we need to remove that move from the list of valid moves
+                moves.remove(moves[i])
+            self.whiteToMove = not self.whiteToMove
+            self.undoMove()
+        
+        # checking for checkmate or stalemate
+        if len(moves) == 0:
+            if self.inCheck():
+                self.checkMate = True
+            else:
+                self.staleMate = True
+        else:
+            self.checkMate = False
+            self.staleMate = False
+
+        return moves
+    
+    # determine if current player is in check
+    def inCheck(self):
+        if self.whiteToMove:
+            return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
+        else:
+            return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
+
+
+    # determine if they enemy can attack the square at row, col
+    def squareUnderAttack(self, row, col):
+        # switch to opp turn
+        self.whiteToMove = not self.whiteToMove
+        oppMoves = self.getAllPossibleMoves()
+        # switch back
+        self.whiteToMove = not self.whiteToMove
+        for move in oppMoves:
+            if move.endRow == row and move.endCol == col:        
+                return True
+        return False
 
 
     # all moves without considering checks
@@ -111,6 +177,7 @@ class GameState():
                     '''
         return moves
 
+
     # chatGPT
     #The refactored code simplifies the white/black pawn move logic into a single set of conditionals by setting the direction, enemy, start_row, and end_row variables based on the self.whiteToMove boolean value. The code also combines the diagonal capture checks into a single if statement, making it more concise. Finally, the code includes a TODO comment to remind the reader that pawn promotion and en-passant need to be implemented.
     def getPawnMoves(self, row, col, moves):
@@ -139,6 +206,7 @@ class GameState():
             
         # TODO: pawn promotion, en-passant not allowed
 
+
     # refactored chatGPT Code
     # Instead of using if statements to check each possible move, we can create a list of tuples representing all possible moves for the knight. Then, we iterate over each offset and check if the corresponding square is a valid move for the knight. If it is, we append the move to the list of moves.
     #Additionally, we can check if the destination square contains an enemy piece by comparing its color with the color of the knight's piece. We can simplify the logic by checking if the first character of the piece at the destination square is not the same as the knight's piece.
@@ -153,17 +221,21 @@ class GameState():
                 if piece == '--' or piece[0] != self.board[row][col][0]:
                     moves.append(Move((row, col), (endRow, endCol), self.board))
 
+
     # get all diagonal moves for the Bishop at board[row][col]
     # add moves to list
     def getBishopMoves(self, row, col, moves):
         self.getDiagonal(row, col, moves)
+
 
     # get all horizontal and vertical moves for the Rook at board[row][col]
     # add moves to list
     def getRookMoves(self, row, col, moves):
         self.getHorizontal(row, col, moves)
         self.getVertical(row, col, moves)
-                
+
+
+
     # get all diagonal, horizontal and vertical moves for the Queen at board[row][col]
     # add moves to list
     def getQueenMoves(self, row, col, moves):
@@ -183,6 +255,7 @@ class GameState():
                     continue
                 if 0 <= r < n and 0 <= c < n and self.board[r][c][0] != color:
                     moves.append(Move((row, col), (r, c), self.board))
+
 
     # ChatGPT
     # This version uses a loop that iterates over all four diagonals, and then another loop inside each diagonal that generates moves in that diagonal. The loop ends when it hits the edge of the board or a piece. If the piece is an enemy piece, the function appends the move and stops the loop.
@@ -233,6 +306,7 @@ class GameState():
                 break
             else:
                 break
+
 
     # chatGPT
     #This refactored version uses a loop to iterate over the two possible directions (up and down), and for each direction, it uses another loop to explore all the possible squares along that direction. The inner loop keeps track of the current position using the variables r and c, which are initialized to the position immediately above or below the starting square, depending on the direction. The loop continues as long as the current position is within the board boundaries, and updates the position by adding the direction vector to (r, c) at each iteration.
