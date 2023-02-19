@@ -65,6 +65,9 @@ class GameState():
         elif move.pieceMoved == 'bK':
             self.blackKingLocation = (move.endRow, move.endCol)
 
+        if move.isPawnPromotion:
+            self.board[move.endRow][move.endCol] = move.pieceMoved[0] + 'Q'
+
 
     # undo last move made
     def undoMove(self):
@@ -160,21 +163,6 @@ class GameState():
                     piece = self.board[row][col][1]
                     # calls the appropriate move function based on the piece type
                     self.moveFunctions[piece](row, col, moves)
-                    
-                    '''
-                    if piece == 'P':
-                        self.getPawnMoves(row, col, moves)
-                    elif piece == 'N':
-                        self.getKnightMoves(row, col, moves)
-                    elif piece == 'B':
-                        self.getBishopMoves(row, col, moves)
-                    elif piece == 'R':
-                        self.getRookMoves(row, col, moves)
-                    elif piece == 'Q':
-                        self.getQueenMoves(row, col, moves)
-                    elif piece == 'K':
-                        self.getKingMoves(row, col, moves)
-                    '''
         return moves
 
 
@@ -205,6 +193,7 @@ class GameState():
             moves.append(Move((row, col), (row+direction, col+1), self.board))
             
         # TODO: pawn promotion, en-passant not allowed
+
 
 
     # refactored chatGPT Code
@@ -371,6 +360,10 @@ class Move():
         # gen unique move id between 0000 and 7777
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
         #print(self.moveID)
+        self.isPawnPromotion = False
+        if (self.pieceMoved == 'wP' and self.endRow == 0) or (self.pieceMoved == 'bP' and self.endRow == 7):
+            self.isPawnPromotion = True
+        
 
 
     # override equals method

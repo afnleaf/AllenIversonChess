@@ -55,14 +55,20 @@ def main():
     playerClicks = []
     running = True
     playerTurnChange = True
+    gameEnd = False
     while running:
         # stuff to print out the first time the loop gets run
         if playerTurnChange:
             playerTurnChange = False
-            if gs.whiteToMove:
-                print("white to move")
+            if gs.checkMate:
+                print("checkmate.")
+            elif gs.staleMate:
+                print("stalemate.")
             else:
-                print("black to move")
+                if gs.whiteToMove:
+                    print("white to move")
+                else:
+                    print("black to move")
         for e in p.event.get():
             if (e.type == p.QUIT) or (e.type == p.KEYDOWN and e.key == p.K_q):
                 running = False
@@ -89,18 +95,20 @@ def main():
                 if len(playerClicks) == 2:
                     # the engine makes the move
                     move = Engine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    
-                    # check that the move selected is actually valid
-                    if move in validMoves:
-                        print("Moved: " + move.getChessNotation())
-                        gs.makeMove(move)
-                        moveMade = True
-                        # draw to console
-                        printBoard(gs.board)
-                        # reset the user clicks
-                        squareSelected = ()
-                        playerClicks = []
-                    else:
+                    for i in range(len(validMoves)):
+                        # check that the move selected is actually valid
+                        if move == validMoves[i]:
+                        #if move in validMoves:
+                            print("Moved: " + move.getChessNotation())
+                            gs.makeMove(move)
+                            # if is a pawn promotion ask user what to promote?
+                            moveMade = True
+                            # draw to console
+                            printBoard(gs.board)
+                            # reset the user clicks
+                            squareSelected = ()
+                            playerClicks = []
+                    if not moveMade:
                         #print("invalid move")
                         playerClicks = [squareSelected]
                     
