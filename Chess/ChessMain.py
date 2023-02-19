@@ -81,6 +81,8 @@ def main():
                     playerClicks = []
                 else:
                     squareSelected = (row, col)
+                    currMove = Engine.Move(squareSelected, (0,0), gs.board)
+                    print("\t" + currMove.getRankFile(squareSelected[0], squareSelected[1]))
                     # append both 1st and 2nd click
                     playerClicks.append(squareSelected)
                 # after second click

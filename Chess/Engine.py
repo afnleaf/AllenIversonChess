@@ -147,11 +147,11 @@ class GameState():
         offsets = [(2, 1), (2, -1), (-2, 1), (-2, -1), (1, 2), (1, -2), (-1, 2), (-1, -2)]
 
         for offset in offsets:
-            x, y = row + offset[0], col + offset[1]
-            if 0 <= x < n and 0 <= y < n:
-                piece = self.board[x][y]
+            endRow, endCol = row + offset[0], col + offset[1]
+            if 0 <= endRow < n and 0 <= endCol < n:
+                piece = self.board[endRow][endCol]
                 if piece == '--' or piece[0] != self.board[row][col][0]:
-                    moves.append(Move((row, col), (x, y), self.board))
+                    moves.append(Move((row, col), (endRow, endCol), self.board))
 
     # get all diagonal moves for the Bishop at board[row][col]
     # add moves to list
