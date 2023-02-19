@@ -89,18 +89,21 @@ def main():
                 if len(playerClicks) == 2:
                     # the engine makes the move
                     move = Engine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    print(move.getChessNotation())
+                    
                     # check that the move selected is actually valid
                     if move in validMoves:
+                        print("Moved: " + move.getChessNotation())
                         gs.makeMove(move)
                         moveMade = True
                         # draw to console
                         printBoard(gs.board)
+                        # reset the user clicks
+                        squareSelected = ()
+                        playerClicks = []
                     else:
-                        print("invalid move")
-                    # reset the user clicks
-                    squareSelected = ()
-                    playerClicks = []
+                        #print("invalid move")
+                        playerClicks = [squareSelected]
+                    
             # keyboard input
             elif e.type == p.KEYDOWN:
                 # undo when z is pressed
