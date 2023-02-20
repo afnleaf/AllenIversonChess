@@ -100,7 +100,12 @@ def main():
                         if move == validMoves[i]:
                         #if move in validMoves:
                             print("Moved: " + move.getChessNotation())
+                            # change castle flag
+                            if validMoves[i].isCastleMove:
+                                move.isCastleMove = True
                             gs.makeMove(move)
+                            print("test")
+                            print(move.isCastleMove)
                             # if is a pawn promotion ask user what to promote?
                             moveMade = True
                             # draw to console
