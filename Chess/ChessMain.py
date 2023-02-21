@@ -104,8 +104,8 @@ def main():
                             if validMoves[i].isCastleMove:
                                 move.isCastleMove = True
                             gs.makeMove(move)
-                            print("test")
-                            print(move.isCastleMove)
+                            #print("test")
+                            #print(move.isCastleMove)
                             # if is a pawn promotion ask user what to promote?
                             moveMade = True
                             # draw to console
@@ -190,17 +190,35 @@ def main():
             # reset to print out who moves again
             playerTurnChange = True
 
-        drawGameState(screen, gs)
+        drawGameState(screen, gs, validMoves, squareSelected)
         clock.tick(MAX_FPS)
         p.display.flip()
 
 
+# highlight squares visually so that the player knows what moves are valid
+def highlightSquares(screen, gs, validMoves, squareSelected):
+    if squareSelected != ():
+        row, col = squareSelected
+        if gs.board[row][col][0] == ('w' if gs.whiteToMove else 'b'):
+            # highlight selected squares
+            square = p.Surface((SQ_SIZE, SQ_SIZE))
+            square.set_alpha(100)
+            square.fill(p.Color('red'))
+            screen.blit(square, (col*SQ_SIZE, row*SQ_SIZE))
+            # highlight valid moves coming from that square
+            square.fill(p.Color('blue'))
+            for move in validMoves:
+                if move.startRow == row and move.startCol == col:
+                    screen.blit(square, (move.endCol*SQ_SIZE, move.endRow*SQ_SIZE))
+
+
 # Responsible for graphics of the current game state
-def drawGameState(screen, gs):
+def drawGameState(screen, gs, validMoves, squareSelected):
     # draw graphical game state
     # draw squares
     drawBoard(screen)
-    # add in piece highlights 
+    # add in piece highlightsF
+    highlightSquares(screen, gs, validMoves, squareSelected)
     # add in move suggestions
     # draw pieces on top of the squares
     drawPieces(screen, gs.board)
@@ -250,6 +268,12 @@ def printBoard(board):
             print()
     printLetters()
     print('', end = '\n\n')
+
+
+# animated moves
+def animateMove(move, screen, board, clock):
+    pass
+
 
 
 # default notation

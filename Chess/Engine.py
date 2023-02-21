@@ -83,21 +83,20 @@ class GameState():
         # move rook into new square
         # remove from old square
         if move.isCastleMove:
-            print("CASTLEMOVE")
-            print(self.board[move.endRow][move.endCol])
+            #print("CASTLEMOVE")
+            #print(self.board[move.endRow][move.endCol])
             # kingside
             if move.endCol - move.startCol == 2:
-                print("ks")
-                
-                print(self.board[move.endRow][move.endCol-1])
-                print(self.board[move.endRow][move.endCol+1])
+                #print("ks")
+                #print(self.board[move.endRow][move.endCol-1])
+                #print(self.board[move.endRow][move.endCol+1])
                 self.board[move.endRow][move.endCol-1] = self.board[move.endRow][move.endCol+1]
                 self.board[move.endRow][move.endCol+1] = '--'
             # queenside
             else:
-                print("qs")
-                print(self.board[move.endRow][move.endCol+1])
-                print(self.board[move.endRow][move.endCol-2])
+                #print("qs")
+                #print(self.board[move.endRow][move.endCol+1])
+                #print(self.board[move.endRow][move.endCol-2])
                 self.board[move.endRow][move.endCol+1] = self.board[move.endRow][move.endCol-2]
                 self.board[move.endRow][move.endCol-2] = '--'
 
@@ -182,9 +181,9 @@ class GameState():
     # ex pawn cant move if the pawn is pinned to a check by an opposing piece
     # player cant put themselves in check
     def getValidMoves(self):
-        for log in self.castlingRightsLog:
-            print(log.wks, log.wqs, log.bks, log.bqs, end = ", ")
-        print()
+        #for log in self.castlingRightsLog:
+        #    print(log.wks, log.wqs, log.bks, log.bqs, end = ", ")
+        #print()
 
         # temp castling rights to avoid all the possible changes
         tempCastlingRights = CastlingRights(self.currCastlingRights.wks,
