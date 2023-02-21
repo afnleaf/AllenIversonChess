@@ -7,6 +7,7 @@ import sys
 import string
 import pygame as p
 import Engine
+import AIMoveFinder
 
 # size of window
 WIDTH = HEIGHT = 512
@@ -61,19 +62,34 @@ def main():
     running = True
     playerTurnChange = True
     gameEnd = False
+
+    # if a human is playing, then true
+    # if an AI is playing then false
+    playerW = True
+    playerB = False
+
+
     while running:
+        # checking if the player is human or not
+        humanTurn = (gs.whiteToMove and playerW) or (not gs.whiteToMove and playerB)
+        
+
         # stuff to print out the first time the loop gets run
         if playerTurnChange:
             playerTurnChange = False
             if gs.checkMate:
                 print("checkmate.")
+                gameEnd = True
             elif gs.staleMate:
                 print("stalemate.")
+                gameEnd = True
             else:
                 if gs.whiteToMove:
                     print("white to move")
                 else:
                     print("black to move")
+
+
         for e in p.event.get():
             if (e.type == p.QUIT) or (e.type == p.KEYDOWN and e.key == p.K_q):
                 running = False
@@ -81,47 +97,49 @@ def main():
                 #print(gs.moveLog)
             # mouse input
             elif e.type == p.MOUSEBUTTONDOWN:
-                # get (x,y) location of the mouse
-                mousepos = p.mouse.get_pos()
-                row = mousepos[1]//SQ_SIZE
-                col = mousepos[0]//SQ_SIZE
-                # check if same square selected
-                if squareSelected == (row, col):
-                    squareSelected = ()
-                    playerClicks = []
-                else:
-                    squareSelected = (row, col)
-                    currMove = Engine.Move(squareSelected, (0,0), gs.board)
-                    print("\t" + currMove.getRankFile(squareSelected[0], squareSelected[1]))
-                    # append both 1st and 2nd click
-                    playerClicks.append(squareSelected)
-                # after second click
-                if len(playerClicks) == 2:
-                    # the engine makes the move
-                    move = Engine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    for i in range(len(validMoves)):
-                        # check that the move selected is actually valid
-                        if move == validMoves[i]:
-                        #if move in validMoves:
-                            print("Moved: " + move.getChessNotation())
-                            # change castle flag
-                            if validMoves[i].isCastleMove:
-                                move.isCastleMove = True
-                            gs.makeMove(move)
-                            #print("test")
-                            #print(move.isCastleMove)
-                            # if is a pawn promotion ask user what to promote?
-                            moveMade = True
-                            animate = True
-                            gameStarted = True
-                            # draw to console
-                            printBoard(gs.board)
-                            # reset the user clicks
-                            squareSelected = ()
-                            playerClicks = []
-                    if not moveMade:
-                        #print("invalid move")
-                        playerClicks = [squareSelected]
+                # so that the human player can't click on stuff while the bot is thinking
+                if humanTurn:
+                    # get (x,y) location of the mouse
+                    mousepos = p.mouse.get_pos()
+                    row = mousepos[1]//SQ_SIZE
+                    col = mousepos[0]//SQ_SIZE
+                    # check if same square selected
+                    if squareSelected == (row, col):
+                        squareSelected = ()
+                        playerClicks = []
+                    else:
+                        squareSelected = (row, col)
+                        currMove = Engine.Move(squareSelected, (0,0), gs.board)
+                        print("\t" + currMove.getRankFile(squareSelected[0], squareSelected[1]))
+                        # append both 1st and 2nd click
+                        playerClicks.append(squareSelected)
+                    # after second click
+                    if len(playerClicks) == 2:
+                        # the engine makes the move
+                        move = Engine.Move(playerClicks[0], playerClicks[1], gs.board)
+                        for i in range(len(validMoves)):
+                            # check that the move selected is actually valid
+                            if move == validMoves[i]:
+                            #if move in validMoves:
+                                print("Moved: " + move.getChessNotation())
+                                # change castle flag
+                                if validMoves[i].isCastleMove:
+                                    move.isCastleMove = True
+                                gs.makeMove(move)
+                                #print("test")
+                                #print(move.isCastleMove)
+                                # if is a pawn promotion ask user what to promote?
+                                moveMade = True
+                                animate = True
+                                gameStarted = True
+                                # draw to console
+                                printBoard(gs.board)
+                                # reset the user clicks
+                                squareSelected = ()
+                                playerClicks = []
+                        if not moveMade:
+                            #print("invalid move")
+                            playerClicks = [squareSelected]
                     
             # keyboard input
             elif e.type == p.KEYDOWN:
@@ -202,6 +220,14 @@ def main():
                 if e.key == p.K_8:
                     print('8')
                     moveKeyboardIn.append('8')
+
+
+        # AI move finder logic
+        if not gameEnd and not humanTurn:
+            AIMove = AIMoveFinder.findRandomMove(validMoves)
+            gs.makeMove(AIMove)
+            moveMade = True
+            animate = True
 
 
         if moveMade:
