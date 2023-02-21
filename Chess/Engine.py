@@ -366,11 +366,10 @@ class GameState():
 
 
     def getQueenSideCastlingMoves(self, row, col, moves):
-        if self.board[row][col-1] == '--' and self.board[row][col-2] == '--' and self.board[row][col-3]:
+        if self.board[row][col-1] == '--' and self.board[row][col-2] == '--' and self.board[row][col-3] == '--':
             if not self.squareUnderAttack(row, col-1) and not self.squareUnderAttack(row, col-2):
                 moves.append(Move((row, col), (row, col-2), self.board, isCastleMove=True))
         
-
 
     # ChatGPT
     # This version uses a loop that iterates over all four diagonals, and then another loop inside each diagonal that generates moves in that diagonal. The loop ends when it hits the edge of the board or a piece. If the piece is an enemy piece, the function appends the move and stops the loop.
