@@ -171,6 +171,7 @@ class GameState():
 
     # print the move log to console
     def printMoveLog(self):
+        print("Move log:")
         i = 1
         for move in self.moveLog:
             print(str(i) + ". " + move.getChessNotation())

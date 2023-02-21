@@ -42,6 +42,11 @@ def main():
     # flag var for when a move is made
     moveMade = False
 
+    #animation flag
+    animate = False
+
+    gameStarted = False
+
     # do this once before the game while loop
     loadImages()
 
@@ -72,7 +77,6 @@ def main():
         for e in p.event.get():
             if (e.type == p.QUIT) or (e.type == p.KEYDOWN and e.key == p.K_q):
                 running = False
-                print("Move log:")
                 gs.printMoveLog()
                 #print(gs.moveLog)
             # mouse input
@@ -108,6 +112,8 @@ def main():
                             #print(move.isCastleMove)
                             # if is a pawn promotion ask user what to promote?
                             moveMade = True
+                            animate = True
+                            gameStarted = True
                             # draw to console
                             printBoard(gs.board)
                             # reset the user clicks
@@ -128,6 +134,20 @@ def main():
                     printBoard(gs.board)
                     #validMoves = gs.getValidMoves()
                     moveMade = True
+                    animate = False
+                # reset the board
+                if e.key == p.K_r:
+                    if gameStarted:
+                        gs.printMoveLog()
+                        gs = Engine.GameState()
+                        validMoves = gs.getValidMoves()
+                        squareSelected = ()
+                        playerClicks = []
+                        moveMade = False
+                        animate = False
+                        gameStarted = False
+
+
                 # some turbo mad shit
                 if e.key == p.K_RETURN:
                     print()
@@ -183,10 +203,15 @@ def main():
                     print('8')
                     moveKeyboardIn.append('8')
 
+
         if moveMade:
+            #animate da move
+            if animate:
+                animateMove(gs.moveLog[-1], screen, gs.board, clock)
             # gen new set of valid moves
             validMoves = gs.getValidMoves()
             moveMade = False
+            animate = False
             # reset to print out who moves again
             playerTurnChange = True
 
@@ -227,6 +252,7 @@ def drawGameState(screen, gs, validMoves, squareSelected):
 # draw the squares
 # call this before drawPieces()
 def drawBoard(screen):
+    global colors
     # top left square is light
     colors = [p.Color("#fceaa8"), p.Color("#145f4e")]
     for row in range(DIMENSION):
@@ -272,7 +298,27 @@ def printBoard(board):
 
 # animated moves
 def animateMove(move, screen, board, clock):
-    pass
+    global colors
+    dRow = move.endRow - move.startRow
+    dCol = move.endCol - move.startCol
+    framesPerSquare = 1
+    frameCount = (abs(dRow) + abs(dCol) * framesPerSquare)
+    for frame in range(frameCount + 1):
+        row, col = (move.startRow + dRow*frame/frameCount, move.startCol + dCol*frame/frameCount)
+        drawBoard(screen)
+        drawPieces(screen, board)
+        # erase piece moved from its ending square
+        color = colors[(move.endRow + move.endCol) % 2]
+        endSquare = p.Rect(move.endCol*SQ_SIZE, move.endRow*SQ_SIZE, SQ_SIZE, SQ_SIZE)
+        p.draw.rect(screen, color, endSquare)
+        # draw piece on rectangle
+        if move.pieceCaptured != '--':
+            screen.blit(IMAGES[move.pieceCaptured], endSquare)
+        # draw moving piece
+        screen.blit(IMAGES[move.pieceMoved], p.Rect(col*SQ_SIZE, row*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+        p.display.flip()
+        clock.tick(60)
+    
 
 
 
