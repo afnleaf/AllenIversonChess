@@ -1,28 +1,26 @@
 # AllenIversonChess
 
-## How to make the Chess?
+Chess game. No enpassant or 3 move stalemate.
 
-### Visualization of the board state
-- kinda done
-- 8x8 matrix to represent board
-- print the board
+## AI Bot
 
-### Chess Algebraic Notation
-- https://en.wikipedia.org/wiki/Algebraic_notation_(chess)
+Not implemented yet.
 
-
-#### Read it
-#### Output it
-#### Keep track of entire game
-
-### Engine (AI part)
-
-
-# Dependencies
+## Dependencies
 
 pygame
+numpy
 
+'''
 python -m pip install pygame --pre
+'''
+if something doesn't work
 
+## Running
 
+Linux:
+python3 Chess/ChessMain.py
+
+Windows:
+python .\Chess\ChessMain.py
 
