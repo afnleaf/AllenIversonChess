@@ -32,6 +32,35 @@ def loadImages():
 # User input
 # Updates gfx
 def main():
+
+    # choose players
+    print("1. White and Black are played by humans.")
+    print("2. White is played by human, Black is played by the computer.")
+    print("3. White is played by the computer, Black is played by human.")
+    print("4. White and Black are played by the computer.")
+    
+    validChoice = False
+    while not validChoice:
+        choice = input()
+        # if a human is playing, then true
+        # if an AI is playing then false
+        if(int(choice) == 1):
+            playerW = True
+            playerB = True
+            validChoice = True
+        elif(int(choice) == 2):
+            playerW = True
+            playerB = False
+            validChoice = True
+        elif(int(choice) == 3):
+            playerW = False
+            playerB = True
+            validChoice = True
+        elif(int(choice) == 4):
+            playerW = False
+            playerB = False
+            validChoice = True
+    
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
@@ -63,20 +92,17 @@ def main():
     playerTurnChange = True
     gameEnd = False
 
-    # if a human is playing, then true
-    # if an AI is playing then false
-    playerW = True
-    playerB = True
+    
 
 
     while running:
         # checking if the player is human or not
         humanTurn = (gs.whiteToMove and playerW) or (not gs.whiteToMove and playerB)
         
-
         # stuff to print out the first time the loop gets run
         if playerTurnChange:
             playerTurnChange = False
+            print("Turn " + str(gs.turnCounter))
             if gs.checkMate:
                 print("checkmate.")
                 gameEnd = True
@@ -247,6 +273,7 @@ def main():
             playerTurnChange = True
             # draw to console
             printBoard(gs.board)
+
 
         drawGameState(screen, gs, validMoves, squareSelected)
         clock.tick(MAX_FPS)

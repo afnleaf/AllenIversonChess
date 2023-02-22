@@ -35,6 +35,8 @@ class GameState():
             'K': self.getKingMoves
         }
 
+        self.turnCounter = 1
+
         # white always moves first
         self.whiteToMove = True
 
@@ -106,6 +108,8 @@ class GameState():
                                                      self.currCastlingRights.bks, 
                                                      self.currCastlingRights.wqs, 
                                                      self.currCastlingRights.bqs))
+        # update turn counter
+        self.turnCounter += 1
 
     # undo last move made
     def undoMove(self):
@@ -142,6 +146,9 @@ class GameState():
             # for ai
             self.checkMate = False
             self.staleMate = False
+
+            # update turn counter
+            self.turnCounter -= 1
 
 
     def updateCastlingRights(self, move):
