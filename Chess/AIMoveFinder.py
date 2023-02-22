@@ -152,7 +152,8 @@ def findMinMaxMove(gs, validMoves, depth, whiteToMove):
     global nextMove
     if depth == 0:
         return scoreMaterial(gs.board)
-    
+
+    random.shuffle(validMoves)
     if whiteToMove:
         maxScore = -CHECKMATE
         for move in validMoves:

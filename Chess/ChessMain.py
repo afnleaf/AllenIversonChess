@@ -65,7 +65,7 @@ def main():
 
     # if a human is playing, then true
     # if an AI is playing then false
-    playerW = False
+    playerW = True
     playerB = False
 
 
@@ -120,20 +120,15 @@ def main():
                         for i in range(len(validMoves)):
                             # check that the move selected is actually valid
                             if move == validMoves[i]:
-                            #if move in validMoves:
                                 print("Moved: " + move.getChessNotation())
                                 # change castle flag
                                 if validMoves[i].isCastleMove:
                                     move.isCastleMove = True
                                 gs.makeMove(move)
-                                #print("test")
-                                #print(move.isCastleMove)
                                 # if is a pawn promotion ask user what to promote?
                                 moveMade = True
                                 animate = True
                                 gameStarted = True
-                                # draw to console
-                                #printBoard(gs.board)
                                 # reset the user clicks
                                 squareSelected = ()
                                 playerClicks = []
@@ -233,8 +228,9 @@ def main():
             #AIMove = AIMoveFinder.findMinMaxDepth2Move(gs, validMoves)
             AIMove = AIMoveFinder.getBestMoveMinMax(gs, validMoves)
             if AIMove is None:
-                AIMoveFinder.findRandomMove(validMoves)
+                AIMove = AIMoveFinder.findRandomMove(validMoves)
             gs.makeMove(AIMove)
+            print("Moved: " + AIMove.getChessNotation())
             moveMade = True
             animate = True
 
