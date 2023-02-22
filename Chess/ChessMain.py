@@ -133,7 +133,7 @@ def main():
                                 animate = True
                                 gameStarted = True
                                 # draw to console
-                                printBoard(gs.board)
+                                #printBoard(gs.board)
                                 # reset the user clicks
                                 squareSelected = ()
                                 playerClicks = []
@@ -153,6 +153,9 @@ def main():
                     #validMoves = gs.getValidMoves()
                     moveMade = True
                     animate = False
+                    # if youre playing vs a bot, undo the the last two moves
+                    if not playerW or not playerB:
+                        gs.undoMove()
                 # reset the board
                 if e.key == p.K_r:
                     if gameStarted:
@@ -224,7 +227,11 @@ def main():
 
         # AI move finder logic
         if not gameEnd and not humanTurn:
-            AIMove = AIMoveFinder.findRandomMove(validMoves)
+            #AIMove = AIMoveFinder.findRandomMove(validMoves)
+            #AIMove = AIMoveFinder.findGreedyMove(gs, validMoves)
+            AIMove = AIMoveFinder.findMinMaxMove(gs, validMoves)
+            if AIMove is None:
+                AIMoveFinder.findRandomMove(validMoves)
             gs.makeMove(AIMove)
             moveMade = True
             animate = True
@@ -240,6 +247,8 @@ def main():
             animate = False
             # reset to print out who moves again
             playerTurnChange = True
+            # draw to console
+            printBoard(gs.board)
 
         drawGameState(screen, gs, validMoves, squareSelected)
         clock.tick(MAX_FPS)

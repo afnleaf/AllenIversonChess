@@ -46,7 +46,7 @@ class GameState():
         self.blackKingLocation = (0,4)
 
         # game end state
-        self.checkMake = False
+        self.checkMate = False
         self.staleMate = False
 
         # for castling
