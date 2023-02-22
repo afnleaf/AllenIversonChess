@@ -90,19 +90,26 @@ def findMinMaxDepth2Move(gs, validMoves):
     for playerMove in validMoves:
         gs.makeMove(playerMove)
         oppMoves = gs.getValidMoves()
-        oppMaxScore = -CHECKMATE
-        for oppMove in oppMoves:
-            gs.makeMove(oppMove)
-            if gs.checkMate:
-                score = -turnMultiplier * CHECKMATE
-            elif gs.staleMate:
-                score = STALEMATE
-            else:
-                score = -turnMultiplier * scoreMaterial(gs.board)
-            if score > oppMaxScore:
-                oppMaxScore = score
-                #bestPlayerMove = playerMove
-            gs.undoMove()
+        if gs.staleMate:
+            oppMaxScore = STALEMATE
+        elif gs.checkMate:
+            oppMaxScore = CHECKMATE
+        else:
+            oppMaxScore = -CHECKMATE
+            for oppMove in oppMoves:
+                gs.makeMove(oppMove)
+                # kinda innefficient
+                gs.getValidMoves()
+                if gs.checkMate:
+                    score = CHECKMATE
+                elif gs.staleMate:
+                    score = STALEMATE
+                else:
+                    score = -turnMultiplier * scoreMaterial(gs.board)
+                if score > oppMaxScore:
+                    oppMaxScore = score
+                    #bestPlayerMove = playerMove
+                gs.undoMove()
         if oppMaxScore < oppMinMaxScore:
             oppMinMaxScore = oppMaxScore
             bestPlayerMove = playerMove

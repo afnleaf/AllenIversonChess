@@ -65,7 +65,7 @@ def main():
 
     # if a human is playing, then true
     # if an AI is playing then false
-    playerW = True
+    playerW = False
     playerB = False
 
 
@@ -167,6 +167,7 @@ def main():
                         moveMade = False
                         animate = False
                         gameStarted = False
+                        gameEnd = False
 
 
                 # some turbo mad shit
