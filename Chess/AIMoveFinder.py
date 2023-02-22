@@ -21,7 +21,7 @@ complexPieceValue = {
 CHECKMATE = 1000
 STALEMATE = 0
 EVALUTATOR = 1
-DEPTH = 2
+DEPTH = 3
 
 
 # sometimes the AI needs this when it gets stuck
@@ -70,7 +70,7 @@ def scoreBoard(gs):
         return STALEMATE
     
     score = 0
-    for row in board:
+    for row in gs.board:
         for square in row:
             if square[0] == 'w':
                 score += simplePieceValue[square[1]]
@@ -143,7 +143,10 @@ def findMinMaxDepth2Move(gs, validMoves):
 def getBestMoveMinMax(gs, validMoves):
     global nextMove
     nextMove = None
-    findMinMaxMove(gs, validMoves, DEPTH, gs.whiteToMove)
+    random.shuffle(validMoves)
+    #findMinMaxMove(gs, validMoves, DEPTH, gs.whiteToMove)
+    #findMoveNegaMax(gs, validMoves, DEPTH, 1 if gs.whiteToMove else -1)
+    findMoveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
     return nextMove
 
 
@@ -153,7 +156,6 @@ def findMinMaxMove(gs, validMoves, depth, whiteToMove):
     if depth == 0:
         return scoreMaterial(gs.board)
 
-    random.shuffle(validMoves)
     if whiteToMove:
         maxScore = -CHECKMATE
         for move in validMoves:
@@ -179,5 +181,49 @@ def findMinMaxMove(gs, validMoves, depth, whiteToMove):
             gs.undoMove()
         return minScore
 
+
+# yet another better version of MinMax
+def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
+    global nextMove
+    if depth == 0:
+        return turnMultiplier*scoreBoard(gs)
+
+    maxScore = -CHECKMATE
+    for move in validMoves:
+        gs.makeMove(move)
+        nextMoves = gs.getValidMoves()
+        score = -findMoveNegaMax(gs, nextMoves, depth-1, -turnMultiplier)
+        if score > maxScore:
+            maxScore = score
+            if depth == DEPTH:
+                nextMove = move
+        gs.undoMove()
+    return maxScore
+
+
+# yet another even better version of MinMax
+def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
+    global nextMove
+    if depth == 0:
+        return turnMultiplier*scoreBoard(gs)
+
+    # move ordering - toadd
+
+    maxScore = -CHECKMATE
+    for move in validMoves:
+        gs.makeMove(move)
+        nextMoves = gs.getValidMoves()
+        score = -findMoveNegaMaxAlphaBeta(gs, nextMoves, depth-1, -beta, -alpha, -turnMultiplier)
+        if score > maxScore:
+            maxScore = score
+            if depth == DEPTH:
+                nextMove = move
+        gs.undoMove()
+        # alphabeta pruning
+        if maxScore > alpha:
+            alpha = maxScore
+        if alpha >= beta:
+            break
+    return maxScore
 
 
