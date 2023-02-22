@@ -79,8 +79,8 @@ def findGreedyMove(gs, validMoves):
     return bestMove
 
 
-# move finder minmax algorithm, depth of 1 or 2
-def findMinMaxMove(gs, validMoves):
+# move finder minmax algorithm, depth of 2
+def findMinMaxDepth2Move(gs, validMoves):
     # is it black turn or white turn 
     turnMultiplier = 1 if gs.whiteToMove else -1
     oppMinMaxScore = CHECKMATE
