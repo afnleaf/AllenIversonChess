@@ -170,6 +170,20 @@ class GameState():
                 elif move.startCol == 7:
                     self.currCastlingRights.bks = False
 
+        # check if the rook was captured
+        if move.pieceCaptured == 'wR':
+            if move.endRow == 7:
+                if move.endCol == 0:
+                    self.currCastlingRights.wqs = False
+                elif move.endCol == 7:
+                    self.currCastlingRights.wks = False
+        elif move.pieceCaptured == 'bR':
+            if move.endRow == 0:
+                if move.endCol == 0:
+                    self.currCastlingRights.bqs = False
+                elif move.endCol == 7:
+                    self.currCastlingRights.bks = False
+
 
 
     # print the move log to console

@@ -6,8 +6,8 @@ Handle user input and gamestate.
 import sys
 import string
 import pygame as p
-import Engine
-import AIMoveFinder
+# my files
+import Engine, AIMoveFinder
 
 # size of window
 WIDTH = HEIGHT = 512
@@ -65,8 +65,8 @@ def main():
 
     # if a human is playing, then true
     # if an AI is playing then false
-    playerW = False
-    playerB = False
+    playerW = True
+    playerB = True
 
 
     while running:
