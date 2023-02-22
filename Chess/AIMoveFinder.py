@@ -20,7 +20,8 @@ complexPieceValue = {
 
 CHECKMATE = 1000
 STALEMATE = 0
-EVALUTATOR = 0
+EVALUTATOR = 1
+DEPTH = 2
 
 
 # sometimes the AI needs this when it gets stuck
@@ -33,7 +34,7 @@ def scoreMaterial(board):
     if EVALUTATOR == 0:
         return simpleScoreMaterial(board)
     elif EVALUTATOR == 1:
-        return complexScoreMaterial(board)
+        return complexScoreMaterial(board) 
 
 # evaluator simple
 def simpleScoreMaterial(board):
@@ -54,6 +55,27 @@ def complexScoreMaterial(board):
                 score += complexPieceValue[square[1]]
             elif square[0] == 'b':
                 score -= complexPieceValue[square[1]]
+    return score
+
+
+def scoreBoard(gs):
+    if gs.checkMate:
+        if gs.whiteToMove:
+            # black wins
+            return -CHECKMATE
+        else:
+            # white wins
+            return CHECKMATE
+    elif gs.staleMate:
+        return STALEMATE
+    
+    score = 0
+    for row in board:
+        for square in row:
+            if square[0] == 'w':
+                score += simplePieceValue[square[1]]
+            elif square[0] == 'b':
+                score -= simplePieceValue[square[1]]
     return score
 
 
@@ -115,3 +137,46 @@ def findMinMaxDepth2Move(gs, validMoves):
             bestPlayerMove = playerMove
         gs.undoMove()
     return bestPlayerMove
+
+
+# makes the first recursive call
+def getBestMoveMinMax(gs, validMoves):
+    global nextMove
+    nextMove = None
+    findMinMaxMove(gs, validMoves, DEPTH, gs.whiteToMove)
+    return nextMove
+
+
+# recursive to depth of tree provided
+def findMinMaxMove(gs, validMoves, depth, whiteToMove):
+    global nextMove
+    if depth == 0:
+        return scoreMaterial(gs.board)
+    
+    if whiteToMove:
+        maxScore = -CHECKMATE
+        for move in validMoves:
+            gs.makeMove(move)
+            nextMoves = gs.getValidMoves()
+            score = findMinMaxMove(gs, nextMoves, depth - 1, False)
+            if score > maxScore:
+                maxScore = score
+                if depth == DEPTH:
+                    nextMove = move
+            gs.undoMove()
+        return maxScore
+    else:
+        minScore = CHECKMATE
+        for move in validMoves:
+            gs.makeMove(move)
+            nextMoves = gs.getValidMoves()
+            score = findMinMaxMove(gs, nextMoves, depth - 1, True)
+            if score < minScore:
+                minScore = score
+                if depth == DEPTH:
+                    nextMove = move
+            gs.undoMove()
+        return minScore
+
+
+

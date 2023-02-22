@@ -230,7 +230,8 @@ def main():
         if not gameEnd and not humanTurn:
             #AIMove = AIMoveFinder.findRandomMove(validMoves)
             #AIMove = AIMoveFinder.findGreedyMove(gs, validMoves)
-            AIMove = AIMoveFinder.findMinMaxDepth2Move(gs, validMoves)
+            #AIMove = AIMoveFinder.findMinMaxDepth2Move(gs, validMoves)
+            AIMove = AIMoveFinder.getBestMoveMinMax(gs, validMoves)
             if AIMove is None:
                 AIMoveFinder.findRandomMove(validMoves)
             gs.makeMove(AIMove)
