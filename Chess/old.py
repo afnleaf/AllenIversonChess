@@ -1,45 +1,47 @@
-    # get all pawn moves for the Pawn at board[row][col]
-    # add moves to list
-    # todo: pawn promotion, en-passant?
-    def getPawnMoves_old(self, row, col, moves):
-        n = len(self.board)
-        # white pawn moves
-        if self.whiteToMove:
-            # 1 square pawn advance
-            if self.board[row-1][col] == '--':
-                moves.append(Move((row, col), (row-1, col), self.board))
-                # 2 square pawn advance
-                if row == 6 and self.board[row-2][col] == '--':
-                    moves.append(Move((row, col), (row-2, col), self.board))
-            # diagonal capture left
-            if col-1 >= 0:
-                # check for enemy piece
-                if self.board[row-1][col-1][0] == 'b':
-                    moves.append(Move((row, col), (row-1, col-1), self.board))
-            # diagonal capture right
-            if col+1 < n:
-                # check for enemy piece
-                if self.board[row-1][col+1][0] == 'b':
-                    moves.append(Move((row, col), (row-1, col+1), self.board))
+# Chess Moves -----------------------------------------------------------------
 
-        # black pawn moves
-        else:
-            # 1 square pawn advance
-            if self.board[row+1][col] == '--':
-                moves.append(Move((row, col), (row+1, col), self.board))
-                # 2 square pawn advance
-                if row == 1 and self.board[row+2][col] == '--':
-                    moves.append(Move((row, col), (row+2, col), self.board))
-            # diagonal capture right
-            if col-1 >= 0:
-                # check for enemy piece
-                if self.board[row+1][col-1][0] == 'w':
-                    moves.append(Move((row, col), (row+1, col-1), self.board))
-            # diagonal capture right
-            if col+1 < n:
-                # check for enemy piece
-                if self.board[row+1][col+1][0] == 'w':
-                    moves.append(Move((row, col), (row+1, col+1), self.board))
+# get all pawn moves for the Pawn at board[row][col]
+# add moves to list
+# todo: pawn promotion, en-passant?
+def getPawnMoves_old(self, row, col, moves):
+    n = len(self.board)
+    # white pawn moves
+    if self.whiteToMove:
+        # 1 square pawn advance
+        if self.board[row-1][col] == '--':
+            moves.append(Move((row, col), (row-1, col), self.board))
+            # 2 square pawn advance
+            if row == 6 and self.board[row-2][col] == '--':
+                moves.append(Move((row, col), (row-2, col), self.board))
+        # diagonal capture left
+        if col-1 >= 0:
+            # check for enemy piece
+            if self.board[row-1][col-1][0] == 'b':
+                moves.append(Move((row, col), (row-1, col-1), self.board))
+        # diagonal capture right
+        if col+1 < n:
+            # check for enemy piece
+            if self.board[row-1][col+1][0] == 'b':
+                moves.append(Move((row, col), (row-1, col+1), self.board))
+
+    # black pawn moves
+    else:
+        # 1 square pawn advance
+        if self.board[row+1][col] == '--':
+            moves.append(Move((row, col), (row+1, col), self.board))
+            # 2 square pawn advance
+            if row == 1 and self.board[row+2][col] == '--':
+                moves.append(Move((row, col), (row+2, col), self.board))
+        # diagonal capture right
+        if col-1 >= 0:
+            # check for enemy piece
+            if self.board[row+1][col-1][0] == 'w':
+                moves.append(Move((row, col), (row+1, col-1), self.board))
+        # diagonal capture right
+        if col+1 < n:
+            # check for enemy piece
+            if self.board[row+1][col+1][0] == 'w':
+                moves.append(Move((row, col), (row+1, col+1), self.board))
 
 # get all moves for the Knight at board[row][col]
 # add moves to list
@@ -397,3 +399,166 @@ def getVertical_old(self, row, col, moves):
                 break
             elif piece[0] == 'b':
                 break
+
+# AI --------------------------------------------------------------------------
+
+EVALUTATOR = 1
+
+# handles different evaluators based on the EVALUATOR flag
+def scoreMaterial(board):
+    if EVALUTATOR == 0:
+        return simpleScoreMaterial(board)
+    elif EVALUTATOR == 1:
+        return complexScoreMaterial(board) 
+
+# evaluator simple
+def simpleScoreMaterial(board):
+    score = 0
+    for row in board:
+        for square in row:
+            if square[0] == 'w':
+                score += simplePieceValue[square[1]]
+            elif square[0] == 'b':
+                score -= simplePieceValue[square[1]]
+    return score
+
+def complexScoreMaterial(board):
+    score = 0
+    for row in board:
+        for square in row:
+            if square[0] == 'w':
+                score += complexPieceValue[square[1]]
+            elif square[0] == 'b':
+                score -= complexPieceValue[square[1]]
+    return score
+
+def scoreBoard_old(gs):
+    if gs.checkMate:
+        if gs.whiteToMove:
+            # black wins
+            return -CHECKMATE
+        else:
+            # white wins
+            return CHECKMATE
+    elif gs.staleMate:
+        return STALEMATE
+    
+    score = 0
+    for row in gs.board:
+        for square in row:
+            if square[0] == 'w':
+                score += simplePieceValue[square[1]]
+            elif square[0] == 'b':
+                score -= simplePieceValue[square[1]]
+    return score
+
+# move finder GREEDY algorithm
+def findGreedyMove(gs, validMoves):
+    # is it black turn or white turn 
+    turnMultiplier = 1 if gs.whiteToMove else -1
+    maxScore = -CHECKMATE
+    bestMove = None
+
+    for playerMove in validMoves:
+        gs.makeMove(playerMove)
+        if gs.checkMate:
+            score = CHECKMATE
+        elif gs.staleMate:
+            score = STALEMATE
+        else:
+            score = turnMultiplier * scoreMaterial(gs.board)
+        if score > maxScore:
+            maxScore = score
+            bestMove = playerMove
+        gs.undoMove()
+    return bestMove
+
+
+# move finder minmax algorithm, depth of 2
+def findMinMaxDepth2Move(gs, validMoves):
+    # is it black turn or white turn 
+    turnMultiplier = 1 if gs.whiteToMove else -1
+    oppMinMaxScore = CHECKMATE
+    bestPlayerMove = None
+    # add some randomness
+    random.shuffle(validMoves)
+    for playerMove in validMoves:
+        gs.makeMove(playerMove)
+        oppMoves = gs.getValidMoves()
+        if gs.staleMate:
+            oppMaxScore = STALEMATE
+        elif gs.checkMate:
+            oppMaxScore = CHECKMATE
+        else:
+            oppMaxScore = -CHECKMATE
+            for oppMove in oppMoves:
+                gs.makeMove(oppMove)
+                # kinda innefficient
+                gs.getValidMoves()
+                if gs.checkMate:
+                    score = CHECKMATE
+                elif gs.staleMate:
+                    score = STALEMATE
+                else:
+                    score = -turnMultiplier * scoreMaterial(gs.board)
+                if score > oppMaxScore:
+                    oppMaxScore = score
+                    #bestPlayerMove = playerMove
+                gs.undoMove()
+        if oppMaxScore < oppMinMaxScore:
+            oppMinMaxScore = oppMaxScore
+            bestPlayerMove = playerMove
+        gs.undoMove()
+    return bestPlayerMove
+
+
+# recursive to depth of tree provided
+def findMinMaxMove(gs, validMoves, depth, whiteToMove):
+    global nextMove
+    if depth == 0:
+        return scoreMaterial(gs.board)
+
+    if whiteToMove:
+        maxScore = -CHECKMATE
+        for move in validMoves:
+            gs.makeMove(move)
+            nextMoves = gs.getValidMoves()
+            score = findMinMaxMove(gs, nextMoves, depth - 1, False)
+            if score > maxScore:
+                maxScore = score
+                if depth == DEPTH:
+                    nextMove = move
+            gs.undoMove()
+        return maxScore
+    else:
+        minScore = CHECKMATE
+        for move in validMoves:
+            gs.makeMove(move)
+            nextMoves = gs.getValidMoves()
+            score = findMinMaxMove(gs, nextMoves, depth - 1, True)
+            if score < minScore:
+                minScore = score
+                if depth == DEPTH:
+                    nextMove = move
+            gs.undoMove()
+        return minScore
+
+
+# yet another better version of MinMax
+def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
+    global nextMove
+    if depth == 0:
+        return turnMultiplier*scoreBoard(gs)
+
+    maxScore = -CHECKMATE
+    for move in validMoves:
+        gs.makeMove(move)
+        nextMoves = gs.getValidMoves()
+        score = -findMoveNegaMax(gs, nextMoves, depth-1, -turnMultiplier)
+        if score > maxScore:
+            maxScore = score
+            if depth == DEPTH:
+                nextMove = move
+        gs.undoMove()
+    return maxScore
+

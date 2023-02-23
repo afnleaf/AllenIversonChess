@@ -42,27 +42,26 @@ def main():
     print("3. White is played by the computer, Black is played by human.")
     print("4. White and Black are played by the computer.")
     
-    validChoice = False
-    while not validChoice:
+    while True:
         choice = input()
         # if a human is playing, then true
         # if an AI is playing then false
         if(int(choice) == 1):
             playerW = True
             playerB = True
-            validChoice = True
+            break
         elif(int(choice) == 2):
             playerW = True
             playerB = False
-            validChoice = True
+            break
         elif(int(choice) == 3):
             playerW = False
             playerB = True
-            validChoice = True
+            break
         elif(int(choice) == 4):
             playerW = False
             playerB = False
-            validChoice = True
+            break
     
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
@@ -124,6 +123,10 @@ def main():
             if (e.type == p.QUIT) or (e.type == p.KEYDOWN and e.key == p.K_q):
                 running = False
                 gs.printMoveLog()
+                if AIThinking:
+                    moveFinderProcess.terminate()
+                    AIThinking = False
+                moveUndone = True
                 #print(gs.moveLog)
             # mouse input
             elif e.type == p.MOUSEBUTTONDOWN:
