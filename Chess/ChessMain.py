@@ -3,9 +3,11 @@ Main driver
 Handle user input and gamestate.
 """
 
+import os
 import sys
 import string
 import pygame as p
+from multiprocessing import Process, Queue
 # my files
 import Engine, AIMoveFinder
 
@@ -17,7 +19,8 @@ SQ_SIZE = HEIGHT // DIMENSION
 # animations
 MAX_FPS = 15
 IMAGES = {}
-
+# stop welcome message
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 
 # Init global dictionary of chess piece images.
 # Called once in main.
@@ -91,9 +94,10 @@ def main():
     running = True
     playerTurnChange = True
     gameEnd = False
-
-    
-
+    moveUndone = False
+    # flags for multiprocessing
+    AIThinking = False
+    moveFinderProcess = None
 
     while running:
         # checking if the player is human or not
@@ -177,6 +181,10 @@ def main():
                     # if youre playing vs a bot, undo the the last two moves
                     if not playerW or not playerB:
                         gs.undoMove()
+                    if AIThinking:
+                        moveFinderProcess.terminate()
+                        AIThinking = False
+                    moveUndone = True    
                 # reset the board
                 if e.key == p.K_r:
                     if gameStarted:
@@ -189,6 +197,10 @@ def main():
                         animate = False
                         gameStarted = False
                         gameEnd = False
+                        if AIThinking:
+                            moveFinderProcess.terminate()
+                            AIThinking = False
+                        moveUndone = True
 
 
                 # some turbo mad shit
@@ -248,17 +260,28 @@ def main():
 
 
         # AI move finder logic
-        if not gameEnd and not humanTurn:
-            #AIMove = AIMoveFinder.findRandomMove(validMoves)
-            #AIMove = AIMoveFinder.findGreedyMove(gs, validMoves)
-            #AIMove = AIMoveFinder.findMinMaxDepth2Move(gs, validMoves)
-            AIMove = AIMoveFinder.getBestMoveMinMax(gs, validMoves)
-            if AIMove is None:
-                AIMove = AIMoveFinder.findRandomMove(validMoves)
-            gs.makeMove(AIMove)
-            print("Moved: " + AIMove.getChessNotation())
-            moveMade = True
-            animate = True
+        if not gameEnd and not humanTurn and not moveUndone:
+            if not AIThinking:
+                AIThinking = True
+                print("Calculating...")
+                # multi threading
+                returnQueue = Queue()
+                moveFinderProcess = Process(target=AIMoveFinder.getBestMoveMinMax, args=(gs, validMoves, returnQueue))
+                moveFinderProcess.start()
+                #AIMove = AIMoveFinder.findRandomMove(validMoves)
+                #AIMove = AIMoveFinder.findGreedyMove(gs, validMoves)
+                #AIMove = AIMoveFinder.findMinMaxDepth2Move(gs, validMoves)
+                #AIMove = AIMoveFinder.getBestMoveMinMax(gs, validMoves)
+
+            if not moveFinderProcess.is_alive():
+                AIMove = returnQueue.get()    
+                if AIMove is None:
+                    AIMove = AIMoveFinder.findRandomMove(validMoves)
+                gs.makeMove(AIMove)
+                print("Moved: " + AIMove.getChessNotation())
+                moveMade = True
+                animate = True
+                AIThinking = False
 
 
         if moveMade:
@@ -269,6 +292,7 @@ def main():
             validMoves = gs.getValidMoves()
             moveMade = False
             animate = False
+            moveUndone = False
             # reset to print out who moves again
             playerTurnChange = True
             # draw to console
@@ -380,10 +404,6 @@ def animateMove(move, screen, board, clock):
         clock.tick(60)
     
 
-
-
 # default notation
 if __name__ == "__main__":
     main()
-
-

@@ -7,20 +7,23 @@ Chess game. No enpassant or 3 move stalemate.
 Not implemented yet.
 
 ## Dependencies
+- pygame
+- numpy
 
-pygame
-numpy
-
-'''
-python -m pip install pygame --pre
-'''
-if something doesn't work
+```
+python -m pip install -r requirements.txt
+or
+pip install -r requirements.txt
+```
 
 ## Running
 
 Linux:
+```
 python3 Chess/ChessMain.py
+```
 
 Windows:
+```
 python .\Chess\ChessMain.py
-
+```
