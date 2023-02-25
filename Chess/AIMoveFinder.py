@@ -1,7 +1,7 @@
 import random
 import numpy as np
 
-simplePieceValue = {
+simple_piece_value = {
     'K': 0,
     'Q': 9,
     'R': 5,
@@ -10,7 +10,7 @@ simplePieceValue = {
     'P': 1
 }
 
-complexPieceValue = {
+complex_piece_value = {
     'K': 0,
     'Q': 2521,
     'R': 1270,
@@ -20,7 +20,7 @@ complexPieceValue = {
 }
 
 # make king side castling more likely
-kingPositionScores = np.array([
+king_pos_scores = np.array([
     [1, 1, 4, 1, 1, 1, 6, 1],
     [1, 1, 1, 1, 1, 1, 1, 1],
     [1, 1, 1, 1, 1, 1, 1, 1],
@@ -32,19 +32,19 @@ kingPositionScores = np.array([
 ])
 
 # get queen on diags, more towards queen side
-queenPositionScores = np.array([
+queen_pos_scores = np.array([
     [1, 1, 1, 3, 1, 1, 1, 1],
     [1, 2, 3, 3, 3, 1, 1, 1],
-    [1, 4, 4, 3, 3, 4, 3, 1],
+    [1, 4, 4, 3, 3, 3, 3, 1],
     [1, 2, 3, 3, 3, 2, 2, 1],
     [1, 2, 3, 3, 3, 2, 2, 1],
-    [1, 4, 4, 3, 3, 4, 2, 1],
+    [1, 4, 4, 3, 3, 3, 2, 1],
     [1, 2, 3, 3, 3, 1, 1, 1],
     [1, 1, 1, 3, 1, 1, 1, 1]
 ])
 
 # keep rook out of side
-rookPositionScores = np.array([
+rook_pos_scores = np.array([
     [4, 2, 4, 4, 4, 4, 2, 4],
     [4, 4, 4, 4, 4, 4, 4, 4],
     [1, 2, 4, 3, 3, 4, 2, 1],
@@ -56,7 +56,7 @@ rookPositionScores = np.array([
 ])
 
 # get on those diags
-bishopPositionScores = np.array([
+bishop_pos_scores = np.array([
     [4, 3, 2, 1, 1, 2, 3, 4],
     [3, 4, 3, 2, 2, 3, 4, 3],
     [2, 3, 4, 3, 3, 4, 3, 2],
@@ -68,7 +68,7 @@ bishopPositionScores = np.array([
 ])
 
 # central knight is better than rim knight
-knightPositionScores = np.array([
+knight_pos_scores = np.array([
     [1, 1, 1, 1, 1, 1, 1, 1],
     [1, 2, 2, 2, 2, 2, 2, 1],
     [1, 2, 3, 3, 3, 3, 2, 1],
@@ -80,7 +80,7 @@ knightPositionScores = np.array([
 ])
 
 # go towards the promotion
-whitePawnPositionScores = np.array([
+white_pawn_pos_scores = np.array([
     [8, 8, 8, 8, 8, 8, 8, 8],
     [8, 8, 8, 8, 8, 8, 8, 8],
     [5, 6, 6, 7, 7, 6, 6, 5],
@@ -92,7 +92,7 @@ whitePawnPositionScores = np.array([
 ])
 
 # 5 for sicilian
-blackPawnPositionScores = np.array([
+black_pawn_pos_scores = np.array([
     [0, 0, 0, 0, 0, 0, 0, 0],
     [1, 1, 1, 0, 0, 1, 1, 1],
     [1, 1, 2, 1, 1, 2, 1, 1],
@@ -103,14 +103,14 @@ blackPawnPositionScores = np.array([
     [8, 8, 8, 8, 8, 8, 8, 8]
 ])
 
-piecePositionScores = {
-    'K': kingPositionScores,
-    'Q': queenPositionScores,
-    'R': rookPositionScores,
-    'B': bishopPositionScores,
-    'N': knightPositionScores,
-    'wP': whitePawnPositionScores,
-    'bP': blackPawnPositionScores
+piece_pos_scores = {
+    'K': king_pos_scores,
+    'Q': queen_pos_scores,
+    'R': rook_pos_scores,
+    'B': bishop_pos_scores,
+    'N': knight_pos_scores,
+    'wP': white_pawn_pos_scores,
+    'bP': black_pawn_pos_scores
 }
 
 # global variables
@@ -120,15 +120,15 @@ STALEMATE = 0
 DEPTH = 3
 
 # Board Evaluator functions ---------------------------------------------------
-def scoreBoard(gs):
-    if gs.checkMate:
-        if gs.whiteToMove:
+def score_board(gs):
+    if gs.checkmate:
+        if gs.white_to_move:
             # black wins
             return -CHECKMATE
         else:
             # white wins
             return CHECKMATE
-    elif gs.staleMate:
+    elif gs.stalemate:
         return STALEMATE
     
     score = 0
@@ -138,62 +138,62 @@ def scoreBoard(gs):
 
             if square != '--':
                 # score it positionally
-                piecePositionScore = 0
+                curr_piece_pos_score = 0
                 if square[1] == 'P':
-                    pieceToEvaluate = square
+                    curr_piece = square
                 else:
-                    pieceToEvaluate = square[1]
-                piecePositionScore = piecePositionScores[pieceToEvaluate][row][col]
+                    curr_piece = square[1]
+                curr_piece_pos_score = piece_pos_scores[curr_piece][row][col]
                     
                 if square[0] == 'w':
-                    #score += simplePieceValue[square[1]] + (piecePositionScore*0.2)
-                    score += complexPieceValue[square[1]] + (piecePositionScore*5)
+                    #score += simple_piece_value[square[1]] + (curr_piece_pos_score*0.2)
+                    score += complex_piece_value[square[1]] + (curr_piece_pos_score*5)
                 elif square[0] == 'b':
-                    #score -= simplePieceValue[square[1]] + (piecePositionScore*0.2)
-                    score -= complexPieceValue[square[1]] + (piecePositionScore*5)
+                    #score -= simple_piece_value[square[1]] + (curr_piece_pos_score*0.2)
+                    score -= complex_piece_value[square[1]] + (curr_piece_pos_score*5)
     return score
 
 # Move Finder functions -------------------------------------------------------
 
 # sometimes the AI needs this when it gets stuck
-def findRandomMove(validMoves):
-    return validMoves[random.randint(0, len(validMoves)-1)]
+def find_random_move(valid_moves):
+    return valid_moves[random.randint(0, len(valid_moves)-1)]
 
 # makes the first recursive call
-def getBestMoveMinMax(gs, validMoves, returnQueue):
-    global nextMove, counter
-    nextMove = None
+def get_best_move_minmax(gs, valid_moves, return_queue):
+    global next_move, counter
+    next_move = None
     # reverse the list blacks turn to move, so that the moves considered first are deeper in enemy territory
-    if not gs.whiteToMove:
-        validMoves.reverse()
+    if not gs.white_to_move:
+        valid_moves.reverse()
     counter = 0
-    findMoveNegaMaxAlphaBeta(gs, validMoves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.whiteToMove else -1)
+    find_move_negamax_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.white_to_move else -1)
     print("Considered: " + str(counter) + " moves.")
-    returnQueue.put(nextMove)
+    return_queue.put(next_move)
 
 # yet another even better version of MinMax
-def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
-    global nextMove, counter
+def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turnMultiplier):
+    global next_move, counter
     counter += 1
     if depth == 0:
-        return turnMultiplier*scoreBoard(gs)
+        return turnMultiplier*score_board(gs)
 
-    maxScore = -CHECKMATE
-    for move in validMoves:
-        gs.makeMove(move)
-        nextMoves = gs.getValidMoves()
-        score = -findMoveNegaMaxAlphaBeta(gs, nextMoves, depth-1, -beta, -alpha, -turnMultiplier)
-        if score > maxScore:
-            maxScore = score
+    max_score = -CHECKMATE
+    for move in valid_moves:
+        gs.make_move(move)
+        next_moves = gs.get_valid_moves()
+        score = -find_move_negamax_alphabeta(gs, next_moves, depth-1, -beta, -alpha, -turnMultiplier)
+        if score > max_score:
+            max_score = score
             if depth == DEPTH:
-                nextMove = move
-                print(move.getChessNotation(), score)
-        gs.undoMove()
+                next_move = move
+                print(move.get_chess_notation(), score)
+        gs.undo_move()
         # alphabeta pruning
-        if maxScore > alpha:
-            alpha = maxScore
+        if max_score > alpha:
+            alpha = max_score
         if alpha >= beta:
             break
-    return maxScore
+    return max_score
 
 
