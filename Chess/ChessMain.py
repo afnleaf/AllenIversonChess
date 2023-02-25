@@ -6,21 +6,26 @@ Handle user input and gamestate.
 import os
 import sys
 import string
+#
+# os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (100,100)
+# stop welcome message before importing pygame
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame as p
 from multiprocessing import Process, Queue
 # my files
 import Engine, AIMoveFinder
 
 # size of window
-WIDTH = HEIGHT = 1024
+WIDTH = HEIGHT = 720
 # 8x8 board
 DIMENSION = 8
 SQ_SIZE = HEIGHT // DIMENSION
 # animations
 MAX_FPS = 15
 IMAGES = {}
-# stop welcome message
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+
+
+
 
 # Init global dictionary of chess piece images.
 # Called once in main.
@@ -62,6 +67,8 @@ def main():
             playerW = False
             playerB = False
             break
+
+    print("Make sure you bring the pygame window to front.", end="\n\n")
     
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))

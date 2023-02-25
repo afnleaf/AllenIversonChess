@@ -562,3 +562,45 @@ def findMoveNegaMax(gs, validMoves, depth, turnMultiplier):
         gs.undoMove()
     return maxScore
 
+simple_piece_value = {
+    'K': 0,
+    'Q': 9,
+    'R': 5,
+    'B': 3,
+    'N': 3,
+    'P': 1
+}
+
+def score_board(gs):
+    if gs.checkmate:
+        if gs.white_to_move:
+            # black wins
+            return -CHECKMATE
+        else:
+            # white wins
+            return CHECKMATE
+    elif gs.stalemate:
+        return STALEMATE
+    
+    score = 0
+    for row in range(len(gs.board)):
+        for col in range(len(gs.board[row])):
+            square = gs.board[row][col]
+
+            if square != '--':
+                # score it positionally
+                curr_piece_pos_score = 0
+                if square[1] == 'P':
+                    curr_piece = square
+                else:
+                    curr_piece = square[1]
+                curr_piece_pos_score = piece_pos_scores[curr_piece][row][col]
+                    
+                if square[0] == 'w':
+                    #score += simple_piece_value[square[1]] + (curr_piece_pos_score*0.2)
+                    score += complex_piece_value[square[1]] + (curr_piece_pos_score*5)
+                elif square[0] == 'b':
+                    #score -= simple_piece_value[square[1]] + (curr_piece_pos_score*0.2)
+                    score -= complex_piece_value[square[1]] + (curr_piece_pos_score*5)
+    return score
+

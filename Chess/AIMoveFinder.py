@@ -1,22 +1,14 @@
 import random
 import numpy as np
 
-simple_piece_value = {
-    'K': 0,
-    'Q': 9,
-    'R': 5,
-    'B': 3,
-    'N': 3,
-    'P': 1
-}
-
+# left midgame, right endgame
 complex_piece_value = {
-    'K': 0,
-    'Q': 2521,
-    'R': 1270,
-    'B': 836,
-    'N': 817,
-    'P': 198
+    'K': [0, 0],
+    'Q': [2521, 2558],
+    'R': [1270, 1281],
+    'B': [836, 857],
+    'N': [817, 846],
+    'P': [198, 258]
 }
 
 # make king side castling more likely
@@ -35,10 +27,10 @@ king_pos_scores = np.array([
 queen_pos_scores = np.array([
     [1, 1, 1, 3, 1, 1, 1, 1],
     [1, 2, 3, 3, 3, 1, 1, 1],
-    [1, 4, 4, 3, 3, 3, 3, 1],
+    [1, 4, 4, 3, 3, 1, 1, 1],
     [1, 2, 3, 3, 3, 2, 2, 1],
     [1, 2, 3, 3, 3, 2, 2, 1],
-    [1, 4, 4, 3, 3, 3, 2, 1],
+    [1, 4, 4, 3, 3, 1, 1, 1],
     [1, 2, 3, 3, 3, 1, 1, 1],
     [1, 1, 1, 3, 1, 1, 1, 1]
 ])
@@ -71,10 +63,10 @@ bishop_pos_scores = np.array([
 knight_pos_scores = np.array([
     [1, 1, 1, 1, 1, 1, 1, 1],
     [1, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 3, 3, 3, 3, 2, 1],
-    [1, 2, 3, 4, 4, 3, 2, 1],
-    [1, 2, 3, 4, 4, 3, 2, 1],
-    [1, 2, 3, 3, 3, 3, 2, 1],
+    [1, 2, 5, 5, 5, 5, 2, 1],
+    [1, 2, 5, 8, 8, 5, 2, 1],
+    [1, 2, 5, 8, 8, 5, 2, 1],
+    [1, 2, 5, 5, 5, 5, 2, 1],
     [1, 2, 2, 2, 2, 2, 2, 1],
     [1, 1, 1, 1, 1, 1, 1, 1]
 ])
@@ -113,77 +105,86 @@ piece_pos_scores = {
     'bP': black_pawn_pos_scores
 }
 
-# global variables
+# constants
+# checkmate needs to be higher than anything
 CHECKMATE = 100000
 STALEMATE = 0
 # default 3, otherwise it is too slow without adding more optimizations
 DEPTH = 3
+# increasing this increases the weight of the above positional matrices
+POSITIONAL_SCORE_FACTOR = 8
 
 # Board Evaluator functions ---------------------------------------------------
 def score_board(gs):
     if gs.checkmate:
-        if gs.white_to_move:
-            # black wins
-            return -CHECKMATE
-        else:
-            # white wins
-            return CHECKMATE
+        return -CHECKMATE if gs.white_to_move else CHECKMATE
     elif gs.stalemate:
         return STALEMATE
-    
-    score = 0
-    for row in range(len(gs.board)):
-        for col in range(len(gs.board[row])):
-            square = gs.board[row][col]
 
-            if square != '--':
-                # score it positionally
-                curr_piece_pos_score = 0
-                if square[1] == 'P':
-                    curr_piece = square
-                else:
-                    curr_piece = square[1]
-                curr_piece_pos_score = piece_pos_scores[curr_piece][row][col]
-                    
-                if square[0] == 'w':
-                    #score += simple_piece_value[square[1]] + (curr_piece_pos_score*0.2)
-                    score += complex_piece_value[square[1]] + (curr_piece_pos_score*5)
-                elif square[0] == 'b':
-                    #score -= simple_piece_value[square[1]] + (curr_piece_pos_score*0.2)
-                    score -= complex_piece_value[square[1]] + (curr_piece_pos_score*5)
-    return score
+    # default midgame
+    # once above 50 turns, take the endgame value of a piece
+    turn_value = 0
+    if gs.turn_counter > 50:
+        turn_value = 1
+    
+    total_score = 0
+    for row_index, row in enumerate(gs.board):
+        for col_index, square in enumerate(row):
+            if square == '--':
+                continue
+            
+            # determine if the piece is a pawn or not
+            if square[1] == 'P':
+                piece = square
+            else:
+                piece = square[1]
+            
+            piece_pos_score = piece_pos_scores[piece][row_index][col_index]
+            
+            # Add or subtract the score based on the color of the piece
+            color = square[0]
+            score = complex_piece_value[square[1]][turn_value] + (piece_pos_score * POSITIONAL_SCORE_FACTOR)
+            total_score += score if color == 'w' else -score
+            
+    return total_score
 
 # Move Finder functions -------------------------------------------------------
 
 # sometimes the AI needs this when it gets stuck
 def find_random_move(valid_moves):
-    return valid_moves[random.randint(0, len(valid_moves)-1)]
+    return random.choice(valid_moves)
 
 # makes the first recursive call
 def get_best_move_minmax(gs, valid_moves, return_queue):
     global next_move, counter
     next_move = None
-    # reverse the list blacks turn to move, so that the moves considered first are deeper in enemy territory
-    if not gs.white_to_move:
-        valid_moves.reverse()
+    # reverse the list on blacks turn to move, so that the moves considered first are deeper in enemy territory
+    # this introduces a problem where the AI will play the same game everytime against itself
+    #if not gs.white_to_move:
+    #     valid_moves.reverse()
+    # add some randomness
+    random.shuffle(valid_moves)
     counter = 0
     find_move_negamax_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.white_to_move else -1)
     print("Considered: " + str(counter) + " moves.")
     return_queue.put(next_move)
 
 # yet another even better version of MinMax
-def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turnMultiplier):
+def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multiplier):
     global next_move, counter
     counter += 1
     if depth == 0:
-        return turnMultiplier*score_board(gs)
+        return turn_multiplier*score_board(gs)
 
     max_score = -CHECKMATE
     for move in valid_moves:
         gs.make_move(move)
+        # get opp moves
         next_moves = gs.get_valid_moves()
-        score = -find_move_negamax_alphabeta(gs, next_moves, depth-1, -beta, -alpha, -turnMultiplier)
-        if score > max_score:
+        # find core for the next moves
+        score = -find_move_negamax_alphabeta(gs, next_moves, depth-1, -beta, -alpha, -turn_multiplier)
+        
+        if max_score < score:
             max_score = score
             if depth == DEPTH:
                 next_move = move
