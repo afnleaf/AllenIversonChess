@@ -6,6 +6,7 @@ Handle user input and gamestate.
 import os
 import sys
 import string
+import io
 #
 # os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (100,100)
 # stop welcome message before importing pygame
@@ -21,7 +22,7 @@ WIDTH = HEIGHT = 720
 DIMENSION = 8
 SQ_SIZE = HEIGHT // DIMENSION
 # animations
-MAX_FPS = 15
+MAX_FPS = 60
 IMAGES = {}
 
 
@@ -32,7 +33,10 @@ IMAGES = {}
 def load_images():
     pieces = ['wP','wR','wN','wB','wQ','wK','bP','bR','bN','bB','bQ','bK']
     for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load('images/' + piece + '.png'), (SQ_SIZE, SQ_SIZE))
+        #IMAGES[piece] = p.transform.scale(p.image.load('images/' + piece + '.png'), (SQ_SIZE, SQ_SIZE))
+        #IMAGES[piece] = p.transform.scale(p.image.load('images/staunty/' + piece + '.svg'), (SQ_SIZE*4, SQ_SIZE*4))
+        #IMAGES[piece] = p.transform.smoothscale(p.image.load('images/staunty/' + piece + '.svg'), (SQ_SIZE, SQ_SIZE))
+        IMAGES[piece] = p.transform.scale2x(p.image.load('images/staunty/' + piece + '.svg'))
     # Can access image by calling dictionary "IMAGES['wP']"
 
 
@@ -168,7 +172,6 @@ def main():
                                 # if is a pawn promotion ask user what to promote?
                                 move_made = True
                                 animate = True
-                                game_started = True
                                 # reset the user clicks
                                 square_selected = ()
                                 player_clicks = []
@@ -210,8 +213,11 @@ def main():
                         if ai_thinking:
                             move_finder_process.terminate()
                             ai_thinking = False
-                        move_undone = True
-
+                        move_undone = False
+                        move_finder_process = None
+                        player_turn_change = True
+                        if not playerW or not playerB:
+                            ai_thinking = False
 
                 # some turbo mad shit
                 if e.key == p.K_RETURN:
@@ -299,15 +305,16 @@ def main():
             if animate:
                 animate_move(gs.move_log[-1], screen, gs.board, clock)
             # gen new set of valid moves
+            print("pieces left: ", gs.num_pieces_left)
             valid_moves = gs.get_valid_moves()
             move_made = False
+            game_started = True
             animate = False
             move_undone = False
             # reset to print out who moves again
             player_turn_change = True
             # draw to console
             print_board(gs.board)
-
 
         draw_game_state(screen, gs, valid_moves, square_selected)
         clock.tick(MAX_FPS)

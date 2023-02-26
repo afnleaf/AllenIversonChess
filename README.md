@@ -14,6 +14,15 @@ Chess game. No enpassant or 3 move stalemate.
     - 4. White and Black are played by the computer.
 - Pull up the pygame window, for visuals and control as human player.
 
+### keybinds
+- q/Q
+    - quit the game
+    - print the move log
+- r/R
+    - resets the board and game state
+- z/Z
+    - undo a move, 2 if one player is the computer
+
 ## Dependencies
 - pygame
 - numpy

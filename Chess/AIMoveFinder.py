@@ -109,8 +109,10 @@ piece_pos_scores = {
 # checkmate needs to be higher than anything
 CHECKMATE = 100000
 STALEMATE = 0
-# default 3, otherwise it is too slow without adding more optimizations
-DEPTH = 3
+# default 2 fast chess
+# 3 for good thinking moves, can be up to 30 seconds depending on CPU
+# 4 is too slow without adding more optimizations to the game
+DEPTH = 2
 # increasing this increases the weight of the above positional matrices
 POSITIONAL_SCORE_FACTOR = 8
 
@@ -126,7 +128,10 @@ def score_board(gs):
     turn_value = 0
     if gs.turn_counter > 50:
         turn_value = 1
-    
+    #also can change based on num pieces left in the game
+    if gs.num_pieces_left < 22:
+        turn_value = 1
+
     total_score = 0
     for row_index, row in enumerate(gs.board):
         for col_index, square in enumerate(row):
@@ -169,7 +174,8 @@ def get_best_move_minmax(gs, valid_moves, return_queue):
     print("Considered: " + str(counter) + " moves.")
     return_queue.put(next_move)
 
-# yet another even better version of MinMax
+# yet another even better version of minimax
+# source: https://en.wikipedia.org/wiki/Negamax
 def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multiplier):
     global next_move, counter
     counter += 1
@@ -191,10 +197,14 @@ def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multip
                 print(move.get_chess_notation(), score)
         gs.undo_move()
         # alphabeta pruning
+        '''
         if max_score > alpha:
             alpha = max_score
+        '''
+        alpha = max(alpha, max_score)
         if alpha >= beta:
-            break
+            break        
+
     return max_score
 
 
