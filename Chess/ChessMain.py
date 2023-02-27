@@ -29,10 +29,10 @@ IMAGES = {}
 def load_images():
     pieces = ['wP','wR','wN','wB','wQ','wK','bP','bR','bN','bB','bQ','bK']
     for piece in pieces:
-        #IMAGES[piece] = p.transform.scale(p.image.load('images/' + piece + '.png'), (SQ_SIZE, SQ_SIZE))
+        IMAGES[piece] = p.transform.scale(p.image.load('images/' + piece + '.png'), (SQ_SIZE, SQ_SIZE))
         #IMAGES[piece] = p.transform.scale(p.image.load('images/staunty/' + piece + '.svg'), (SQ_SIZE*4, SQ_SIZE*4))
         #IMAGES[piece] = p.transform.smoothscale(p.image.load('images/staunty/' + piece + '.svg'), (SQ_SIZE, SQ_SIZE))
-        IMAGES[piece] = p.transform.scale2x(p.image.load('images/staunty/' + piece + '.svg'))
+        #IMAGES[piece] = p.transform.scale2x(p.image.load('images/staunty/' + piece + '.svg'))
     # Can access image by calling dictionary "IMAGES['wP']"
 
 
