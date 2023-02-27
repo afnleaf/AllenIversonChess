@@ -7,7 +7,6 @@ import os
 import sys
 import string
 import io
-#
 # os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (100,100)
 # stop welcome message before importing pygame
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
@@ -25,9 +24,6 @@ SQ_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 60
 IMAGES = {}
 
-
-
-
 # Init global dictionary of chess piece images.
 # Called once in main.
 def load_images():
@@ -43,59 +39,25 @@ def load_images():
 # Main driver
 # User input
 # Updates gfx
-def main():
-
-    # choose players
-    print("1. White and Black are played by humans.")
-    print("2. White is played by human, Black is played by the computer.")
-    print("3. White is played by the computer, Black is played by human.")
-    print("4. White and Black are played by the computer.")
-    
-    while True:
-        choice = input()
-        # if a human is playing, then true
-        # if an AI is playing then false
-        if(int(choice) == 1):
-            playerW = True
-            playerB = True
-            break
-        elif(int(choice) == 2):
-            playerW = True
-            playerB = False
-            break
-        elif(int(choice) == 3):
-            playerW = False
-            playerB = True
-            break
-        elif(int(choice) == 4):
-            playerW = False
-            playerB = False
-            break
-
-    print("Make sure you bring the pygame window to front.", end="\n\n")
-    
+def main(playerW, playerB):   
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = Engine.GameState()
 
+    # do this once before the game while loop
+    load_images()
+    #draw on console first time
+    print_board(gs.board)
+    
     # generate valid moves
     valid_moves = gs.get_valid_moves()
     # flag var for when a move is made
     move_made = False
-
     #animation flag
     animate = False
-
     game_started = False
-
-    # do this once before the game while loop
-    load_images()
-
-    #draw on console first time
-    print_board(gs.board)
-    
     # keep track of last square clicked tuple(row, col)
     square_selected = ()
     move_keyboard_input = []
@@ -423,4 +385,36 @@ def animate_move(move, screen, board, clock):
 
 # default notation
 if __name__ == "__main__":
-    main()
+    # choose players, default white played by human, black played by computer
+    playerW = True
+    playerB = False
+    
+    print("1. White and Black are played by humans.")
+    print("2. White is played by human, Black is played by the computer.")
+    print("3. White is played by the computer, Black is played by human.")
+    print("4. White and Black are played by the computer.")
+
+    while True:
+        choice = input()
+        # if a human is playing, then true
+        # if an AI is playing then false
+        if(int(choice) == 1):
+            playerW = True
+            playerB = True
+            break
+        elif(int(choice) == 2):
+            playerW = True
+            playerB = False
+            break
+        elif(int(choice) == 3):
+            playerW = False
+            playerB = True
+            break
+        elif(int(choice) == 4):
+            playerW = False
+            playerB = False
+            break
+
+    print("Make sure you bring the pygame window to front.", end="\n\n")
+
+    main(playerW, playerB)

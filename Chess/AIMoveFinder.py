@@ -129,7 +129,7 @@ def score_board(gs):
     if gs.turn_counter > 50:
         turn_value = 1
     #also can change based on num pieces left in the game
-    if gs.num_pieces_left < 22:
+    elif gs.num_pieces_left < 22:
         turn_value = 1
 
     total_score = 0
@@ -137,20 +137,16 @@ def score_board(gs):
         for col_index, square in enumerate(row):
             if square == '--':
                 continue
-            
             # determine if the piece is a pawn or not
             if square[1] == 'P':
                 piece = square
             else:
                 piece = square[1]
-            
             piece_pos_score = piece_pos_scores[piece][row_index][col_index]
-            
             # Add or subtract the score based on the color of the piece
             color = square[0]
             score = complex_piece_value[square[1]][turn_value] + (piece_pos_score * POSITIONAL_SCORE_FACTOR)
             total_score += score if color == 'w' else -score
-            
     return total_score
 
 # Move Finder functions -------------------------------------------------------
@@ -165,17 +161,20 @@ def get_best_move_minmax(gs, valid_moves, return_queue):
     next_move = None
     # reverse the list on blacks turn to move, so that the moves considered first are deeper in enemy territory
     # this introduces a problem where the AI will play the same game everytime against itself
+    # would need to implement randomness to the slice of first couple of moves and see if that changes anything
     #if not gs.white_to_move:
     #     valid_moves.reverse()
     # add some randomness
     random.shuffle(valid_moves)
     counter = 0
-    find_move_negamax_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, 1 if gs.white_to_move else -1)
+    turn = 1 if gs.white_to_move else -1
+    find_move_negamax_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, turn)
     print("Considered: " + str(counter) + " moves.")
     return_queue.put(next_move)
 
 # yet another even better version of minimax
 # source: https://en.wikipedia.org/wiki/Negamax
+# TODO: implement transposition tables
 def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multiplier):
     global next_move, counter
     counter += 1
