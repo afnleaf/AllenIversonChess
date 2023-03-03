@@ -604,3 +604,64 @@ def score_board(gs):
                     score -= complex_piece_value[square[1]] + (curr_piece_pos_score*5)
     return score
 
+# CHESSMAIN -------------------
+ #move_keyboard_input = []
+    # some turbo mad shit
+    if e.key == p.K_RETURN:
+        print()
+        print("commit move")
+        print(move_keyboard_input)
+        move_keyboard_input.clear()
+    if e.key == p.K_a:
+        print('a', end='')
+        move_keyboard_input.append('a')
+    if e.key == p.K_b:
+        print('b', end='')
+        move_keyboard_input.append('b')
+    if e.key == p.K_c:
+        print('c', end='')
+        move_keyboard_input.append('c')
+    if e.key == p.K_d:
+        print('d', end='')
+        move_keyboard_input.append('d')
+    if e.key == p.K_e:
+        print('e', end='')
+        move_keyboard_input.append('e')
+    if e.key == p.K_f:
+        print('f', end='')
+        move_keyboard_input.append('f')
+    if e.key == p.K_g:
+        print('g', end='')
+        move_keyboard_input.append('g')
+    if e.key == p.K_h:
+        print('h', end='')
+        move_keyboard_input.append('h')
+    if e.key == p.K_1:
+        print('1')
+        move_keyboard_input.append('1')
+    if e.key == p.K_2:
+        print('2')
+        move_keyboard_input.append('2')
+    if e.key == p.K_3:
+        print('3')
+        move_keyboard_input.append('3')
+    if e.key == p.K_4:
+        print('4')
+        move_keyboard_input.append('4')
+    if e.key == p.K_5:
+        print('5')
+        move_keyboard_input.append('5')
+    if e.key == p.K_6:
+        print('6')
+        move_keyboard_input.append('6')
+    if e.key == p.K_7:
+        print('7')
+        move_keyboard_input.append('7')
+    if e.key == p.K_8:
+        print('8')
+        move_keyboard_input.append('8')
+
+
+    # if youre playing vs a bot, undo the the last two moves
+    #if not playerW or not playerB:
+    #    gs.undo_move()

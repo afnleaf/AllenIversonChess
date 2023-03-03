@@ -1,4 +1,5 @@
 import random
+import time
 import numpy as np
 
 # left midgame, right endgame
@@ -109,10 +110,10 @@ piece_pos_scores = {
 # checkmate needs to be higher than anything
 CHECKMATE = 100000
 STALEMATE = 0
-# default 2 fast chess
-# 3 for good thinking moves, can be up to 30 seconds depending on CPU
+# 2 is pretty fast
+# default 3 is usable but runs up to 90 seconds on my machine
 # 4 is too slow without adding more optimizations to the game
-DEPTH = 2
+DEPTH = 3
 # increasing this increases the weight of the above positional matrices
 POSITIONAL_SCORE_FACTOR = 8
 
@@ -167,9 +168,11 @@ def get_best_move_minmax(gs, valid_moves, return_queue):
     # add some randomness
     random.shuffle(valid_moves)
     counter = 0
+    time_before = time.time()
     turn = 1 if gs.white_to_move else -1
     find_move_negamax_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, turn)
-    print("Considered: " + str(counter) + " moves.")
+    time_after = time.time()
+    print("Considered: " + str(counter) + " moves.", str("%.2f" % (time_after - time_before)), "seconds.")
     return_queue.put(next_move)
 
 # yet another even better version of minimax
