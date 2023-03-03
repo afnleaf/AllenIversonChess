@@ -6,3 +6,5 @@
 *.zip
 *.7z
 *.tar
+
+ChessMain.build
