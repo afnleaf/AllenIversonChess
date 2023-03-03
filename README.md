@@ -1,10 +1,18 @@
 # AllenIversonChess
-Chess game. No enpassant or 3 move stalemate.
+Simple chess game with board visualization. No enpassant or 3 move stalemate.
 
 ## AI Bot
 - Nega Max Alpha Beta Pruning
 - Evaluating on piece score and positional matrix.
-- Depth of 3
+
+### Configuration
+Can be found in `config.py`.
+
+- **CHECKMATE**: score related to checkmate, keep this as a very high number
+- **STALEMATE**: keep this at 0
+- **DEPTH**: 3 is a good default, anything above will be pretty slow to unusable. Try 2 for speed or 4 for fun.
+- **POSITIONAL_SCORE_FACTOR**: How much weight is assigned to piece position.
+- **TIMELIMIT**: default is 30, that goes well with depth of 3, which can occassionaly go beyond 30 seconds. 
 
 ## How to play
 - Choose option:
@@ -14,7 +22,7 @@ Chess game. No enpassant or 3 move stalemate.
     - 4. White and Black are played by the computer.
 - Pull up the pygame window, for visuals and control as human player.
 
-### keybinds
+### Keybinds
 - q/Q
     - quit the game
     - print the move log
@@ -24,8 +32,10 @@ Chess game. No enpassant or 3 move stalemate.
     - undo a move, 2 if one player is the computer
 
 ## Dependencies
-- pygame
-- numpy
+Must install the following python packages to run this program.
+
+- pygame (for the visualization)
+- numpy (for the 2D board representation)
 
 ```
 python -m pip install -r requirements.txt
@@ -34,7 +44,7 @@ pip install -r requirements.txt
 ```
 
 ## Running
-Linux:
+Linux/macOS:
 ```
 python3 Chess/ChessMain.py
 ```
