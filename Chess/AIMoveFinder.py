@@ -116,6 +116,8 @@ STALEMATE = 0
 DEPTH = 3
 # increasing this increases the weight of the above positional matrices
 POSITIONAL_SCORE_FACTOR = 8
+# limit of 30 seconds per move
+TIMELIMIT = 30.0
 
 # Board Evaluator functions ---------------------------------------------------
 def score_board(gs):
@@ -170,7 +172,7 @@ def get_best_move_minmax(gs, valid_moves, return_queue):
     counter = 0
     time_before = time.time()
     turn = 1 if gs.white_to_move else -1
-    find_move_negamax_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, turn)
+    find_move_negamax_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, turn, time_before)
     time_after = time.time()
     print("Considered: " + str(counter) + " moves.", str("%.2f" % (time_after - time_before)), "seconds.")
     return_queue.put(next_move)
@@ -178,10 +180,11 @@ def get_best_move_minmax(gs, valid_moves, return_queue):
 # yet another even better version of minimax
 # source: https://en.wikipedia.org/wiki/Negamax
 # TODO: implement transposition tables
-def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multiplier):
+def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multiplier, time_before):
     global next_move, counter
     counter += 1
-    if depth == 0:
+    time_after = time.time()
+    if depth == 0 or time_after - time_before > TIMELIMIT:
         return turn_multiplier*score_board(gs)
 
     max_score = -CHECKMATE
@@ -190,7 +193,7 @@ def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multip
         # get opp moves
         next_moves = gs.get_valid_moves()
         # find core for the next moves
-        score = -find_move_negamax_alphabeta(gs, next_moves, depth-1, -beta, -alpha, -turn_multiplier)
+        score = -find_move_negamax_alphabeta(gs, next_moves, depth-1, -beta, -alpha, -turn_multiplier, time_before)
         
         if max_score < score:
             max_score = score

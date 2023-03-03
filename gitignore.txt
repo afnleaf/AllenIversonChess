@@ -1,0 +1,8 @@
+# macos generated files
+.DS_store
+
+#archive
+*.tar.gz
+*.zip
+*.7z
+*.tar
