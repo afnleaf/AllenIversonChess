@@ -207,6 +207,7 @@ class GameState():
         for move in self.move_log:
             print(str(i) + ". " + move.get_chess_notation())
             i += 1
+        print()
 
 
     # all moves considering checks
