@@ -24,22 +24,13 @@ SQ_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 60
 IMAGES = {}
 
-# Init global dictionary of chess piece images.
-# Called once in main.
-def load_images():
-    pieces = ['wP','wR','wN','wB','wQ','wK','bP','bR','bN','bB','bQ','bK']
-    for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load('images/' + piece + '.png'), (SQ_SIZE, SQ_SIZE))
-        #IMAGES[piece] = p.transform.scale(p.image.load('images/staunty/' + piece + '.svg'), (SQ_SIZE*4, SQ_SIZE*4))
-        #IMAGES[piece] = p.transform.smoothscale(p.image.load('images/staunty/' + piece + '.svg'), (SQ_SIZE, SQ_SIZE))
-        #IMAGES[piece] = p.transform.scale2x(p.image.load('images/staunty/' + piece + '.svg'))
-    # Can access image by calling dictionary "IMAGES['wP']"
+
 
 
 # Main driver
 # User input
 # Updates gfx
-def main(playerW, playerB):   
+def play(playerW, playerB):   
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
@@ -224,56 +215,68 @@ def main(playerW, playerB):
         p.display.flip()
 
 
-# highlight squares visually so that the player knows what moves are valid
-def highlight_squares(screen, gs, valid_moves, square_selected):
-    if square_selected != ():
-        row, col = square_selected
-        if gs.board[row][col][0] == ('w' if gs.white_to_move else 'b'):
-            # highlight selected squares
-            square = p.Surface((SQ_SIZE, SQ_SIZE))
-            square.set_alpha(100)
-            square.fill(p.Color('red'))
-            screen.blit(square, (col*SQ_SIZE, row*SQ_SIZE))
-            # highlight valid moves coming from that square
-            square.fill(p.Color('blue'))
-            for move in valid_moves:
-                if move.start_row == row and move.start_col == col:
-                    screen.blit(square, (move.end_col*SQ_SIZE, move.end_row*SQ_SIZE))
+# Init global dictionary of chess piece images.
+# Called once in main.
+def load_images():
+    for piece in ['wP','wR','wN','wB','wQ','wK','bP','bR','bN','bB','bQ','bK']:
+        # Can access image by calling dictionary "IMAGES['wP']"
+        IMAGES[piece] = p.transform.scale(p.image.load('images/' + piece + '.png'), (SQ_SIZE, SQ_SIZE))
+    
 
-
-# Responsible for graphics of the current game state
+# draw graphical game state
 def draw_game_state(screen, gs, valid_moves, square_selected):
-    # draw graphical game state
     # draw squares
-    draw_board(screen)
-    # add in piece highlightsF
+    draw_board_base(screen)
+    # add on piece highlights
     highlight_squares(screen, gs, valid_moves, square_selected)
-    # add in move suggestions
     # draw pieces on top of the squares
     draw_pieces(screen, gs.board)
 
 
 # draw the squares
 # call this before draw_pieces()
-def draw_board(screen):
+def draw_board_base(screen):
     global colors
     # top left square is light
     colors = [p.Color("#fceaa8"), p.Color("#145f4e")]
     for row in range(DIMENSION):
         for col in range(DIMENSION):
             color = colors[((row + col) % 2)]
-            p.draw.rect(screen, color, p.Rect(col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE))
+            square = p.Rect(col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE)
+            p.draw.rect(screen, color, square)
 
 
-# draw the pieces using the current game state data
+# highlight squares visually so that the player knows what moves are valid
+def highlight_squares(screen, gs, valid_moves, square_selected):
+    # not empty
+    if square_selected:
+        row, col = square_selected
+        piece = gs.board[row][col]
+        if piece != '--' and piece.startswith('w' if gs.white_to_move else 'b'):
+            # highlight selected square
+            selected_square = p.Surface((SQ_SIZE, SQ_SIZE))
+            selected_square.set_alpha(100)
+            selected_square.fill(p.Color('red'))
+            screen.blit(selected_square, (col*SQ_SIZE, row*SQ_SIZE))
+
+            # highlight valid moves coming from that square
+            valid_square = p.Surface((SQ_SIZE, SQ_SIZE))
+            valid_square.set_alpha(100)
+            valid_square.fill(p.Color('blue'))
+            for move in valid_moves:
+                if move.start_row == row and move.start_col == col:
+                    screen.blit(valid_square, (move.end_col*SQ_SIZE, move.end_row*SQ_SIZE))
+
+
+# draw the pieces using the current board data
 def draw_pieces(screen, board):
     for row in range(DIMENSION):
         for col in range(DIMENSION):
             piece = board[row][col]
             # check for empty square
             if piece != '--':
-                # what is blit()
-                screen.blit(IMAGES[piece], p.Rect(col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE))
+                piece_to_draw = p.Rect(col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE)
+                screen.blit(IMAGES[piece], piece_to_draw)
 
 
 # draw the pieces to the command line
@@ -303,59 +306,60 @@ def print_board(board):
 # animated moves
 def animate_move(move, screen, board, clock):
     global colors
-    dRow = move.end_row - move.start_row
-    dCol = move.end_col - move.start_col
-    framesPerSquare = 1
-    frameCount = (abs(dRow) + abs(dCol) * framesPerSquare)
-    for frame in range(frameCount + 1):
-        row, col = (move.start_row + dRow*frame/frameCount, move.start_col + dCol*frame/frameCount)
-        draw_board(screen)
+    d_row = move.end_row - move.start_row
+    d_col = move.end_col - move.start_col
+    frames_per_square = 4
+    frame_count = (abs(d_row) + abs(d_col)) * frames_per_square
+
+    for frame in range(frame_count + 1):
+        row = move.start_row + (d_row * (frame / frame_count))
+        col = move.start_col + (d_col * (frame / frame_count))
+        draw_board_base(screen)
         draw_pieces(screen, board)
+
         # erase piece moved from its ending square
         color = colors[(move.end_row + move.end_col) % 2]
-        endSquare = p.Rect(move.end_col*SQ_SIZE, move.end_row*SQ_SIZE, SQ_SIZE, SQ_SIZE)
-        p.draw.rect(screen, color, endSquare)
+        end_square = p.Rect(move.end_col * SQ_SIZE, move.end_row * SQ_SIZE, SQ_SIZE, SQ_SIZE)
+        p.draw.rect(screen, color, end_square)
+
         # draw piece on rectangle
         if move.piece_captured != '--':
-            screen.blit(IMAGES[move.piece_captured], endSquare)
+            screen.blit(IMAGES[move.piece_captured], end_square)
+
         # draw moving piece
-        screen.blit(IMAGES[move.piece_moved], p.Rect(col*SQ_SIZE, row*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+        moving_piece = p.Rect(col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE)
+        screen.blit(IMAGES[move.piece_moved], moving_piece)
         p.display.flip()
         clock.tick(60)
-    
 
-# default notation
-if __name__ == "__main__":
-    # choose players, default white played by human, black played by computer
-    playerW = True
-    playerB = False
-    
+
+# let the user choose the game mode before the game loads up
+def choose_game_mode():
     print("1. White and Black are played by humans.")
     print("2. White is played by human, Black is played by the computer.")
     print("3. White is played by the computer, Black is played by human.")
     print("4. White and Black are played by the computer.")
 
-    while True:
-        choice = input()
-        # if a human is playing, then true
-        # if an AI is playing then false
-        if(int(choice) == 1):
-            playerW = True
-            playerB = True
-            break
-        elif(int(choice) == 2):
-            playerW = True
-            playerB = False
-            break
-        elif(int(choice) == 3):
-            playerW = False
-            playerB = True
-            break
-        elif(int(choice) == 4):
-            playerW = False
-            playerB = False
-            break
+    choice = int(input())
+    if choice == 1:
+        return True, True
+    elif choice == 2:
+        return True, False
+    elif choice == 3:
+        return False, True
+    elif choice == 4:
+        return False, False
+    else:
+        print("Invalid input. Please enter a number between 1 and 4.")
+        return choose_game_mode()
 
+def main():
+    # choose players
+    playerW,playerB = choose_game_mode()
     print("Make sure you bring the pygame window to front.", end="\n\n")
 
-    main(playerW, playerB)
+    play(playerW, playerB)
+
+# default notation
+if __name__ == "__main__":
+    main()

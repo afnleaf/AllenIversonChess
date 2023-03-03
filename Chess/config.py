@@ -9,4 +9,4 @@ DEPTH = 3
 # increasing this increases the weight of the above positional matrices
 POSITIONAL_SCORE_FACTOR = 8
 # default limit of 30 seconds per move
-TIMELIMIT = 30.0
+TIMELIMIT = 45.0
