@@ -167,7 +167,7 @@ class GameLoop():
                 self.player_clicks = [self.square_selected]
 
 
-    # hanles changing sides and turn animation
+    # handles changing sides and turn animation
     def when_move_made(self):
         #animate the move
         if self.animate:
