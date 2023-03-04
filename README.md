@@ -4,6 +4,7 @@ Simple chess game with board visualization. No enpassant or 3 move stalemate.
 ## AI Bot
 - Nega Max Alpha Beta Pruning
 - Evaluating on piece score and positional matrix.
+- Transposition table for valid moves only. Uses Zobrist hashing method.
 
 ### Configuration
 Can be found in `config.py`.

@@ -268,7 +268,7 @@ class Game():
 def load_images():
     for piece in ['wP','wR','wN','wB','wQ','wK','bP','bR','bN','bB','bQ','bK']:
         # Can access image by calling dictionary "IMAGES['wP']"
-        IMAGES[piece] = p.transform.scale(p.image.load('images/' + piece + '.png'), (SQ_SIZE, SQ_SIZE))
+        IMAGES[piece] = p.transform.scale(p.image.load('images/staunty/' + piece + '.png'), (SQ_SIZE, SQ_SIZE))
 
 
 # Draw graphical game state
