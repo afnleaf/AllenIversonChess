@@ -3,6 +3,8 @@ import time
 import numpy as np
 # import constants from config
 from config import *
+# for hashing the transposition tables
+from Zobrist import ZobristHash
 
 # left midgame, right endgame
 complex_piece_value = {
@@ -108,6 +110,10 @@ piece_pos_scores = {
     'bP': black_pawn_pos_scores
 }
 
+# speed up AI
+zobrist = ZobristHash()
+transposition_table = {}
+
 # Board Evaluator functions ---------------------------------------------------
 def score_board(gs):
     if gs.checkmate:
@@ -168,13 +174,21 @@ def get_best_move_minmax(gs, valid_moves, return_queue):
 
 # yet another even better version of minmax
 # source: https://en.wikipedia.org/wiki/Negamax
-# TODO: implement transposition tables
+# implemented transposition tables, has to be a bug somewhere tho
 def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multiplier, time_before):
     global next_move, counter
     counter += 1
     time_after = time.time()
     if depth == 0 or time_after - time_before > TIMELIMIT:
         return turn_multiplier*score_board(gs)
+
+    # store the hash of the board and the moves
+    hash_value = zobrist.hash(gs.board, gs.white_to_move, gs.curr_castling_rights)
+    if hash_value in transposition_table:
+        valid_moves = transposition_table[hash_value]
+        print("same board state reached")
+    else:
+        transposition_table[hash_value] = valid_moves
 
     max_score = -CHECKMATE
     for move in valid_moves:
@@ -191,10 +205,6 @@ def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multip
                 print(move.get_chess_notation(), score)
         gs.undo_move()
         # alphabeta pruning
-        '''
-        if max_score > alpha:
-            alpha = max_score
-        '''
         alpha = max(alpha, max_score)
         if alpha >= beta:
             break        
