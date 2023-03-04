@@ -2,34 +2,34 @@
 Main driver
 Handle user input and gamestate.
 """
-
 import os
 import sys
 import string
 import io
 # os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (100,100)
-# stop welcome message before importing pygame
+# Stop welcome message before importing pygame
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import pygame as p
 from multiprocessing import Process, Queue
-# my files
-import Engine, AIMoveFinder
+# My files
+import Engine
+import AIMoveFinder
 
-# size of window
+# Size of window
 WIDTH = HEIGHT = 720
 # 8x8 board
 DIMENSION = 8
 SQ_SIZE = HEIGHT // DIMENSION
-# animations
+# Animations
 MAX_FPS = 60
 IMAGES = {}
 
 # Handles the initialization of the gamestate
 # Contains the player keyboard functions
 # Loops the game
-class GameLoop():
-    
-    # init the game state and the flags that go with it
+class Game():
+
+    # Init the game state and the flags that go with it
     def __init__(self, playerW, playerB):
         p.init()
         self.screen = p.display.set_mode((WIDTH, HEIGHT))
@@ -37,19 +37,20 @@ class GameLoop():
         self.screen.fill(p.Color("white"))
         self.gs = Engine.GameState()
 
-        # do this once before the game while loop
+        # Do this once before the game while loop
         load_images()
-        #draw on console first time
+        # Draw on console first time
         print_board(self.gs.board)
-        
+
+        # Determine if player is human or computer
         self.playerW = playerW
         self.playerB = playerB
 
-        # keep track of last square clicked tuple(row, col)
+        # Keep track of last square clicked tuple(row, col)
         self.square_selected = ()
-        # track player clicks, two tuples 
+        # Track player clicks, two tuples
         self.player_clicks = []
-        
+
         # Flags
         self.move_made = False
         self.animate = False
@@ -58,9 +59,10 @@ class GameLoop():
         self.game_end = False
         self.move_undone = False
         self.running = True
-        # flags for multiprocessing
+        # Flags for multiprocessing
         self.ai_thinking = False
-        self.move_finder_process = None    
+        self.move_finder_process = None
+
 
     # Quitting the game.
     def quit(self):
@@ -74,15 +76,15 @@ class GameLoop():
     # Undoing a move.
     def undo(self):
         self.gs.undo_move()
-        # prevent this from printing again
-        #draw on console again
+        # Prevent this from printing again
+        # Draw on console again
         print("undo")
-        print_board(self.gs.board)
-        #valid_moves = gs.get_valid_moves()
         self.move_made = True
         self.animate = False
         self.kill_process()
         self.move_undone = True
+
+        return self.gs.get_valid_moves()
     
 
     # Resetting the game state to the start.
@@ -104,19 +106,21 @@ class GameLoop():
 
         return self.gs.get_valid_moves()
 
-    # handle the ai thinking process
+
+    # Handle the ai thinking process when the game is reset in some way
     def kill_process(self):
         if self.ai_thinking:
             self.move_finder_process.terminate()
             self.ai_thinking = False
 
 
-    # stuff to print out the first time the loop gets run
+    # Print out the first time the loop gets run
+    # Avoid loop printing constantly
     def on_first_run(self):
         if self.player_turn_change:
             self.player_turn_change = False
             print("Turn ", str(self.gs.turn_counter))
-            # even if game ends we need to keep the loop running for keybinds
+            # Even if game ends we need to keep the loop running for keybinds
             if self.gs.checkmate:
                 print("Checkmate.")
                 self.game_end = True
@@ -129,12 +133,13 @@ class GameLoop():
                 else:
                     print("black to move")
 
+    # Handles user input in pygame window
     def player_input(self, valid_moves):
-        # get (x,y) location of the mouse
+        # Get (x,y) location of the mouse
         mousepos = p.mouse.get_pos()
         row = mousepos[1]//SQ_SIZE
         col = mousepos[0]//SQ_SIZE
-        # check if same square selected
+        # Check if same square selected
         if self.square_selected == (row, col):
             self.square_selected = ()
             self.player_clicks = []
@@ -142,34 +147,34 @@ class GameLoop():
             self.square_selected = (row, col)
             curr_move = Engine.Move(self.square_selected, (0,0), self.gs.board)
             print("\t" + curr_move.get_rank_file(self.square_selected[0], self.square_selected[1]))
-            # append both 1st and 2nd click
+            # Append both 1st and 2nd click
             self.player_clicks.append(self.square_selected)
-        # after second click
+        # After second click
         if len(self.player_clicks) == 2:
-            # the engine makes the move
+            # The engine makes the move
             move = Engine.Move(self.player_clicks[0], self.player_clicks[1], self.gs.board)
             for i in range(len(valid_moves)):
-                # check that the move selected is actually valid
+                # Check that the move selected is actually valid
                 if move == valid_moves[i]:
                     print("Moved: " + move.get_chess_notation())
-                    # change castle flag
+                    # Change castle flag
                     if valid_moves[i].is_castle_move:
                         move.is_castle_move = True
                     self.gs.make_move(move)
-                    # if is a pawn promotion ask user what to promote?
+                    # If is a pawn promotion ask user what to promote?
                     self.move_made = True
                     self.animate = True
-                    # reset the user clicks
+                    # Reset the user clicks
                     self.square_selected = ()
                     self.player_clicks = []
             if not self.move_made:
-                #print("invalid move")
+                # won't be considered
                 self.player_clicks = [self.square_selected]
 
 
-    # handles changing sides and turn animation
+    # Handles changing sides and turn animation
     def when_move_made(self):
-        #animate the move
+        # Animate the move
         if self.animate:
             animate_move(self.gs.move_log[-1], self.screen, self.gs.board, self.clock)
         print("pieces left: ", self.gs.num_pieces_left)
@@ -177,41 +182,41 @@ class GameLoop():
         self.game_started = True
         self.animate = False
         self.move_undone = False
-        # reset to print out who moves again
+        # Reset to print out who moves again
         self.player_turn_change = True
-        # draw to console
+        # Draw to console
         print_board(self.gs.board)
 
-        # gen new set of valid moves
+        # Gen new set of valid moves
         return self.gs.get_valid_moves()
 
 
-    # the game playing loop
+    # The game playing loop
     def play(self):
-        # on first run generate valid moves
+        # On first run generate valid moves
         valid_moves = self.gs.get_valid_moves()
 
         while self.running:
-            # checking if the player is human or not
+            # Checking if the player is human or not
             human_turn = (self.gs.white_to_move and self.playerW) or (not self.gs.white_to_move and self.playerB)
-            
+
             self.on_first_run()
-            
+
             for e in p.event.get():
-                # quitting the game
+                # Quitting the game
                 if (e.type == p.QUIT) or (e.type == p.KEYDOWN and e.key == p.K_q):
                     self.quit()
-                # mouse input
+                # Mouse input
                 elif e.type == p.MOUSEBUTTONDOWN:
-                    # so that the human player can't click on stuff while the bot is thinking
+                    # So that the human player can't click on stuff while the bot is thinking
                     if human_turn:
                         self.player_input(valid_moves)
-                # keyboard input
+                # Keyboard input
                 elif e.type == p.KEYDOWN:
-                    # undo when z is pressed
+                    # Undo when z is pressed
                     if e.key == p.K_z:
-                        self.undo() 
-                    # reset the board
+                        valid_moves = self.undo()
+                    # Reset the board
                     if e.key == p.K_r:
                         if self.game_started:
                             valid_moves = self.reset()
@@ -221,13 +226,13 @@ class GameLoop():
                 if not self.ai_thinking:
                     self.ai_thinking = True
                     print("Calculating...")
-                    # multi threading
+                    # Multi-Threading
                     returnQueue = Queue()
                     self.move_finder_process = Process(target=AIMoveFinder.get_best_move_minmax, args=(self.gs, valid_moves, returnQueue))
                     self.move_finder_process.start()
 
                 if not self.move_finder_process.is_alive():
-                    ai_move = returnQueue.get()    
+                    ai_move = returnQueue.get()
                     if ai_move is None:
                         ai_move = AIMoveFinder.find_random_move(valid_moves)
                     self.gs.make_move(ai_move)
@@ -237,11 +242,12 @@ class GameLoop():
                     self.ai_thinking = False
 
             if self.move_made:
-                 valid_moves = self.when_move_made()
+                valid_moves = self.when_move_made()
 
             draw_game_state(self.screen, self.gs, valid_moves, self.square_selected)
             self.clock.tick(MAX_FPS)
             p.display.flip()
+
 
 # Init global dictionary of chess piece images.
 # Called once in main.
@@ -249,23 +255,23 @@ def load_images():
     for piece in ['wP','wR','wN','wB','wQ','wK','bP','bR','bN','bB','bQ','bK']:
         # Can access image by calling dictionary "IMAGES['wP']"
         IMAGES[piece] = p.transform.scale(p.image.load('images/' + piece + '.png'), (SQ_SIZE, SQ_SIZE))
-    
 
-# draw graphical game state
+
+# Draw graphical game state
 def draw_game_state(screen, gs, valid_moves, square_selected):
-    # draw squares
+    # Draw squares
     draw_board_base(screen)
-    # add on piece highlights
+    # Add on piece highlights
     highlight_squares(screen, gs, valid_moves, square_selected)
-    # draw pieces on top of the squares
+    # Draw pieces on top of the squares
     draw_pieces(screen, gs.board)
 
 
-# draw the squares
-# call this before draw_pieces()
+# Draw the squares
+# Call this before draw_pieces()
 def draw_board_base(screen):
     global colors
-    # top left square is light
+    # Top left square is light
     colors = [p.Color("#fceaa8"), p.Color("#145f4e")]
     for row in range(DIMENSION):
         for col in range(DIMENSION):
@@ -274,20 +280,20 @@ def draw_board_base(screen):
             p.draw.rect(screen, color, square)
 
 
-# highlight squares visually so that the player knows what moves are valid
+# Highlight squares visually so that the player knows what moves are valid
 def highlight_squares(screen, gs, valid_moves, square_selected):
-    # not empty
+    # Not empty
     if square_selected:
         row, col = square_selected
         piece = gs.board[row][col]
         if piece != '--' and piece.startswith('w' if gs.white_to_move else 'b'):
-            # highlight selected square
+            # Highlight selected square
             selected_square = p.Surface((SQ_SIZE, SQ_SIZE))
             selected_square.set_alpha(100)
             selected_square.fill(p.Color('red'))
             screen.blit(selected_square, (col*SQ_SIZE, row*SQ_SIZE))
 
-            # highlight valid moves coming from that square
+            # Highlight valid moves coming from that square
             valid_square = p.Surface((SQ_SIZE, SQ_SIZE))
             valid_square.set_alpha(100)
             valid_square.fill(p.Color('blue'))
@@ -296,42 +302,35 @@ def highlight_squares(screen, gs, valid_moves, square_selected):
                     screen.blit(valid_square, (move.end_col*SQ_SIZE, move.end_row*SQ_SIZE))
 
 
-# draw the pieces using the current board data
+# Draw the pieces using the current board data
 def draw_pieces(screen, board):
     for row in range(DIMENSION):
         for col in range(DIMENSION):
             piece = board[row][col]
-            # check for empty square
+            # Check for empty square
             if piece != '--':
                 piece_to_draw = p.Rect(col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE)
                 screen.blit(IMAGES[piece], piece_to_draw)
 
 
-# draw the pieces to the command line
-def print_board(board):    
-    # because we call it twice letters
+# Draw the pieces to the command line
+# `join` is cool
+def print_board(board):
+    # Because we call it twice
     def print_letters():
         print("  ", end='')
-        for letter in string.ascii_uppercase:
-            print(letter + ' ', end = ' ')
-            if(letter == 'H'):
-                break
-        print()
+        print("  ".join(string.ascii_uppercase[:8]))
 
-    n = len(board)
     print_letters()
-    for i in range(n + 1):
-        if i < 8:
-            print(str(Engine.Move.rows_to_ranks[i]), end = ' ')
-            for j in range(n):
-                print(board[i][j], end = ' ')
-            print(str(Engine.Move.rows_to_ranks[i]), end = ' ') 
-            print()
+    for i, row in enumerate(board):
+        print(Engine.Move.rows_to_ranks[i], end=" ")
+        print(" ".join(row), end=" ")
+        print(Engine.Move.rows_to_ranks[i])
     print_letters()
-    print('', end = '\n\n')
+    print()
 
 
-# animated moves
+# Animated moves
 def animate_move(move, screen, board, clock):
     global colors
     d_row = move.end_row - move.start_row
@@ -345,23 +344,23 @@ def animate_move(move, screen, board, clock):
         draw_board_base(screen)
         draw_pieces(screen, board)
 
-        # erase piece moved from its ending square
+        # Erase piece moved from its ending square
         color = colors[(move.end_row + move.end_col) % 2]
         end_square = p.Rect(move.end_col * SQ_SIZE, move.end_row * SQ_SIZE, SQ_SIZE, SQ_SIZE)
         p.draw.rect(screen, color, end_square)
 
-        # draw piece on rectangle
+        # Draw piece on rectangle
         if move.piece_captured != '--':
             screen.blit(IMAGES[move.piece_captured], end_square)
 
-        # draw moving piece
+        # Draw moving piece
         moving_piece = p.Rect(col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE)
         screen.blit(IMAGES[move.piece_moved], moving_piece)
         p.display.flip()
         clock.tick(60)
 
 
-# let the user choose the game mode before the game loads up
+# Let the user choose the game mode before the game loads up
 def choose_game_mode():
     print("1. White and Black are played by humans.")
     print("2. White is played by human, Black is played by the computer.")
@@ -381,15 +380,16 @@ def choose_game_mode():
         print("Invalid input. Please enter a number between 1 and 4.")
         return choose_game_mode()
 
+
 def main():
-    # choose players
+    # Choose players
     playerW,playerB = choose_game_mode()
     print("Make sure you bring the pygame window to front.", end="\n\n")
-    #load_game(playerW, playerB)
 
-    game = GameLoop(playerW, playerB)
+    # Play the game
+    game = Game(playerW, playerB)
     game.play()
 
-# default notation
+# Default notation
 if __name__ == "__main__":
     main()

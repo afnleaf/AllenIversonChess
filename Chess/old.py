@@ -400,6 +400,25 @@ def getVertical_old(self, row, col, moves):
             elif piece[0] == 'b':
                 break
 
+    # all moves without considering checks
+    # consider all moves that are possible based on how a piece is legally allowed to move
+    """
+    def get_all_possible_moves(self):
+        # moves = [Move((6,4), (4,4), self.board)]
+        moves = []
+        # check all pieces on our board
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                # find the colour of the piece
+                turn = self.board[row][col][0]
+                if(turn == 'w' and self.white_to_move) or (turn == 'b' and not self.white_to_move):
+                    # get the piece type
+                    piece = self.board[row][col][1]
+                    # calls the appropriate move function based on the piece type
+                    self.move_functions[piece](row, col, moves)
+        return moves
+    """
+
 # AI --------------------------------------------------------------------------
 
 EVALUTATOR = 1
@@ -665,3 +684,213 @@ def score_board(gs):
     # if youre playing vs a bot, undo the the last two moves
     #if not playerW or not playerB:
     #    gs.undo_move()
+
+# Main driver
+# User input
+# Updates gfx
+def play(playerW, playerB):   
+    p.init()
+    screen = p.display.set_mode((WIDTH, HEIGHT))
+    clock = p.time.Clock()
+    screen.fill(p.Color("white"))
+    gs = Engine.GameState()
+
+    # do this once before the game while loop
+    load_images()
+    #draw on console first time
+    print_board(gs.board)
+    
+    # generate valid moves
+    valid_moves = gs.get_valid_moves()
+    # flag var for when a move is made
+    move_made = False
+    #animation flag
+    animate = False
+    game_started = False
+    # keep track of last square clicked tuple(row, col)
+    square_selected = ()
+   
+    # track player clicks, two tuples 
+    player_clicks = []
+    running = True
+    player_turn_change = True
+    game_end = False
+    move_undone = False
+    # flags for multiprocessing
+    ai_thinking = False
+    move_finder_process = None
+
+    while running:
+        # checking if the player is human or not
+        human_turn = (gs.white_to_move and playerW) or (not gs.white_to_move and playerB)
+        
+        # stuff to print out the first time the loop gets run
+        if player_turn_change:
+            player_turn_change = False
+            print("Turn " + str(gs.turn_counter))
+            if gs.checkmate:
+                print("checkmate.")
+                game_end = True
+            elif gs.stalemate:
+                print("stalemate.")
+                game_end = True
+            else:
+                if gs.white_to_move:
+                    print("white to move")
+                else:
+                    print("black to move")
+
+
+        for e in p.event.get():
+            if (e.type == p.QUIT) or (e.type == p.KEYDOWN and e.key == p.K_q):
+                running = False
+                gs.print_move_log()
+                if ai_thinking:
+                    move_finder_process.terminate()
+                    ai_thinking = False
+                move_undone = True
+                #print(gs.moveLog)
+            # mouse input
+            elif e.type == p.MOUSEBUTTONDOWN:
+                # so that the human player can't click on stuff while the bot is thinking
+                if human_turn:
+                    # get (x,y) location of the mouse
+                    mousepos = p.mouse.get_pos()
+                    row = mousepos[1]//SQ_SIZE
+                    col = mousepos[0]//SQ_SIZE
+                    # check if same square selected
+                    if square_selected == (row, col):
+                        square_selected = ()
+                        player_clicks = []
+                    else:
+                        square_selected = (row, col)
+                        curr_move = Engine.Move(square_selected, (0,0), gs.board)
+                        print("\t" + curr_move.get_rank_file(square_selected[0], square_selected[1]))
+                        # append both 1st and 2nd click
+                        player_clicks.append(square_selected)
+                    # after second click
+                    if len(player_clicks) == 2:
+                        # the engine makes the move
+                        move = Engine.Move(player_clicks[0], player_clicks[1], gs.board)
+                        for i in range(len(valid_moves)):
+                            # check that the move selected is actually valid
+                            if move == valid_moves[i]:
+                                print("Moved: " + move.get_chess_notation())
+                                # change castle flag
+                                if valid_moves[i].is_castle_move:
+                                    move.is_castle_move = True
+                                gs.make_move(move)
+                                # if is a pawn promotion ask user what to promote?
+                                move_made = True
+                                animate = True
+                                # reset the user clicks
+                                square_selected = ()
+                                player_clicks = []
+                        if not move_made:
+                            #print("invalid move")
+                            player_clicks = [square_selected]
+                    
+            # keyboard input
+            elif e.type == p.KEYDOWN:
+                # undo when z is pressed
+                if e.key == p.K_z:
+                    gs.undo_move()
+                    # prevent this from printing again
+                    #draw on console again
+                    print("undo")
+                    print_board(gs.board)
+                    #valid_moves = gs.get_valid_moves()
+                    move_made = True
+                    animate = False
+                    if ai_thinking:
+                        move_finder_process.terminate()
+                        ai_thinking = False
+                    move_undone = True    
+                # reset the board
+                if e.key == p.K_r:
+                    if game_started:
+                        gs.print_move_log()
+                        gs = Engine.GameState()
+                        valid_moves = gs.get_valid_moves()
+                        square_selected = ()
+                        player_clicks = []
+                        move_made = False
+                        animate = False
+                        game_started = False
+                        game_end = False
+                        if ai_thinking:
+                            move_finder_process.terminate()
+                            ai_thinking = False
+                        move_undone = False
+                        move_finder_process = None
+                        player_turn_change = True
+                        if not playerW or not playerB:
+                            ai_thinking = False
+
+        # AI move finder logic
+        if not game_end and not human_turn and not move_undone:
+            if not ai_thinking:
+                ai_thinking = True
+                print("Calculating...")
+                # multi threading
+                returnQueue = Queue()
+                move_finder_process = Process(target=AIMoveFinder.get_best_move_minmax, args=(gs, valid_moves, returnQueue))
+                move_finder_process.start()
+                #AIMove = AIMoveFinder.find_random_move(valid_moves)
+                #AIMove = AIMoveFinder.findGreedyMove(gs, valid_moves)
+                #AIMove = AIMoveFinder.findMinMaxDepth2Move(gs, valid_moves)
+                #AIMove = AIMoveFinder.get_best_move_minmax(gs, valid_moves)
+
+            if not move_finder_process.is_alive():
+                ai_move = returnQueue.get()    
+                if ai_move is None:
+                    ai_move = AIMoveFinder.find_random_move(valid_moves)
+                gs.make_move(ai_move)
+                print("Moved: " + ai_move.get_chess_notation())
+                move_made = True
+                animate = True
+                ai_thinking = False
+
+
+        if move_made:
+            #animate da move
+            if animate:
+                animate_move(gs.move_log[-1], screen, gs.board, clock)
+            # gen new set of valid moves
+            print("pieces left: ", gs.num_pieces_left)
+            valid_moves = gs.get_valid_moves()
+            move_made = False
+            game_started = True
+            animate = False
+            move_undone = False
+            # reset to print out who moves again
+            player_turn_change = True
+            # draw to console
+            print_board(gs.board)
+
+        draw_game_state(screen, gs, valid_moves, square_selected)
+        clock.tick(MAX_FPS)
+        p.display.flip()
+
+# Draw the pieces to the command line
+def print_board(board):    
+    # Because we call it twice
+    def print_letters():
+        print("  ", end='')
+        for letter in string.ascii_uppercase:
+            print(letter + ' ', end = ' ')
+            if(letter == 'H'):
+                break
+        print()
+
+    n = len(board)
+    print_letters()
+    for i in range(n + 1):
+        if i < 8:
+            print(str(Engine.Move.rows_to_ranks[i]), end = ' ')
+            for j in range(n):
+                print(board[i][j], end = ' ')
+            print(str(Engine.Move.rows_to_ranks[i]), end = ' ') 
+            print()
+    print_letters()
+    print('', end = '\n\n')

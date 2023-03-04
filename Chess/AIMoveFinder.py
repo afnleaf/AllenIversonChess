@@ -155,7 +155,7 @@ def get_best_move_minmax(gs, valid_moves, return_queue):
     # this introduces a problem where the AI will play the same game everytime against itself
     # would need to implement randomness to the slice of first couple of moves and see if that changes anything
     #if not gs.white_to_move:
-    #     valid_moves.reverse()
+    #    valid_moves.reverse()
     # add some randomness
     random.shuffle(valid_moves)
     counter = 0
@@ -166,7 +166,7 @@ def get_best_move_minmax(gs, valid_moves, return_queue):
     print("Considered: " + str(counter) + " moves.", str("%.2f" % (time_after - time_before)), "seconds.")
     return_queue.put(next_move)
 
-# yet another even better version of minimax
+# yet another even better version of minmax
 # source: https://en.wikipedia.org/wiki/Negamax
 # TODO: implement transposition tables
 def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multiplier, time_before):
@@ -200,5 +200,3 @@ def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multip
             break        
 
     return max_score
-
-
