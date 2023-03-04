@@ -894,3 +894,73 @@ def print_board(board):
             print()
     print_letters()
     print('', end = '\n\n')
+
+# zobrist -----------------------------------------------------------------------------------------
+'''
+if __name__ == "__main__":
+    # create a chess board
+    #board = chess.Board()
+    board1 = [
+        ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+        ['bP','bP','bP','bP','bP','bP','bP','bP'],
+        ['--','--','--','--','--','--','--','--'],
+        ['--','--','--','--','--','--','--','--'],
+        ['--','--','--','--','--','--','--','--'],
+        ['--','--','--','--','--','--','--','--'],
+        ['wP','wP','wP','wP','wP','wP','wP','wP'],
+        ['wR','wN','wB','wQ','wK','wB','wN','wR']
+    ]
+
+    board2 = [
+        ['bR','bN','bB','bQ','bK','bB','bN','bR'],
+        ['bP','bP','bP','bP','bP','bP','bP','bP'],
+        ['--','--','--','--','--','--','--','--'],
+        ['--','--','--','--','--','--','--','--'],
+        ['--','--','--','wP','--','--','--','--'],
+        ['--','--','--','--','--','--','--','--'],
+        ['wP','wP','wP','--','wP','wP','wP','wP'],
+        ['wR','wN','wB','wQ','wK','wB','wN','wR']
+    ]
+
+    table = {}
+
+    # create a ZobristHash object
+    zobrist = ZobristHash()
+
+    # get the Zobrist hash of the board
+    #hash_value = zobrist.hash(board1, True, CastlingRights(True, True, True, True))
+    hash_value = ZobristHash().hash(board1, True, CastlingRights(True, True, True, True))
+    print(hash_value)
+
+    #hash_value = zobrist.hash(board2, False, CastlingRights(True, True, True, True))
+    hash_value = ZobristHash().hash(board2, False, CastlingRights(True, True, True, True))
+    print(hash_value)
+
+    #hash_value = zobrist.hash(board1, True, CastlingRights(True, True, True, True))
+    hash_value = ZobristHash().hash(board1, True, CastlingRights(True, True, True, True))
+    print(hash_value)
+'''
+
+        '''
+        if board.has_kingside_castling_rights(chess.WHITE):
+            hash_value ^= self.castling_keys[0]
+        if board.has_queenside_castling_rights(chess.WHITE):
+            hash_value ^= self.castling_keys[1]
+        if board.has_kingside_castling_rights(chess.BLACK):
+            hash_value ^= self.castling_keys[2]
+        if board.has_queenside_castling_rights(chess.BLACK):
+            hash_value ^= self.castling_keys[3]
+        '''
+
+                '''
+        if board.turn == chess.BLACK:
+            hash_value ^= self.side_key
+        '''
+
+        '''
+        for i in range(64):
+            piece = board.piece_at(i)
+            if piece:
+                piece_type = piece.symbol().upper()
+                hash_value ^= self.piece_keys[(piece_type, i)]
+        '''

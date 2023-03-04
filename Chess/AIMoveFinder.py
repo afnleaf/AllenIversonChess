@@ -110,10 +110,6 @@ piece_pos_scores = {
     'bP': black_pawn_pos_scores
 }
 
-# speed up AI
-zobrist = ZobristHash()
-transposition_table = {}
-
 # Board Evaluator functions ---------------------------------------------------
 def score_board(gs):
     if gs.checkmate:
@@ -154,7 +150,7 @@ def find_random_move(valid_moves):
     return random.choice(valid_moves)
 
 # makes the first recursive call
-def get_best_move_minmax(gs, valid_moves, return_queue):
+def get_best_move_minmax(gs, valid_moves, return_queue, transposition_table, zobrist):
     global next_move, counter
     next_move = None
     # reverse the list on blacks turn to move, so that the moves considered first are deeper in enemy territory
@@ -167,36 +163,40 @@ def get_best_move_minmax(gs, valid_moves, return_queue):
     counter = 0
     time_before = time.time()
     turn = 1 if gs.white_to_move else -1
-    find_move_negamax_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, turn, time_before)
+    find_move_negamax_alphabeta(gs, valid_moves, DEPTH, -CHECKMATE, CHECKMATE, turn, time_before, transposition_table, zobrist)
     time_after = time.time()
     print("Considered: " + str(counter) + " moves.", str("%.2f" % (time_after - time_before)), "seconds.")
     return_queue.put(next_move)
 
 # yet another even better version of minmax
 # source: https://en.wikipedia.org/wiki/Negamax
-# implemented transposition tables, has to be a bug somewhere tho
-def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multiplier, time_before):
+# alpha beta pruning
+# transposition tables for valid moves
+# TODO: implement move ordering based on stored table scores
+def find_move_negamax_alphabeta(gs, valid_moves, depth, alpha, beta, turn_multiplier, time_before, transposition_table, zobrist):
     global next_move, counter
     counter += 1
     time_after = time.time()
     if depth == 0 or time_after - time_before > TIMELIMIT:
         return turn_multiplier*score_board(gs)
 
-    # store the hash of the board and the moves
-    hash_value = zobrist.hash(gs.board, gs.white_to_move, gs.curr_castling_rights)
-    if hash_value in transposition_table:
-        valid_moves = transposition_table[hash_value]
-        print("same board state reached")
-    else:
-        transposition_table[hash_value] = valid_moves
-
     max_score = -CHECKMATE
     for move in valid_moves:
         gs.make_move(move)
-        # get opp moves
-        next_moves = gs.get_valid_moves()
-        # find core for the next moves
-        score = -find_move_negamax_alphabeta(gs, next_moves, depth-1, -beta, -alpha, -turn_multiplier, time_before)
+        
+        # store the hash of the new board and the moves
+        hash_value = zobrist.hash(gs.board, gs.white_to_move, gs.curr_castling_rights)
+        #print(hash_value)
+        if hash_value in transposition_table:
+            next_moves = transposition_table[hash_value]
+            #print("same board state reached")
+        else:
+            # get opp moves
+            next_moves = gs.get_valid_moves()
+            transposition_table.update({hash_value: next_moves})
+
+        # find score for the next moves
+        score = -find_move_negamax_alphabeta(gs, next_moves, depth-1, -beta, -alpha, -turn_multiplier, time_before, transposition_table, zobrist)
         
         if max_score < score:
             max_score = score

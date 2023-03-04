@@ -1,4 +1,5 @@
-# constants
+# Constants to configure AI
+
 # checkmate needs to be higher than anything
 CHECKMATE = 100000
 STALEMATE = 0
@@ -8,6 +9,7 @@ STALEMATE = 0
 DEPTH = 3
 # increasing this increases the weight of the above positional matrices
 POSITIONAL_SCORE_FACTOR = 8
-# default limit of 30 seconds per move, but then ai might make weird blunders
+# default limit of 45 seconds per move, but then ai might make weird blunders
 # to avoid those blunders, make the time limit larger
-TIMELIMIT = 90.0
+# TIMELIMIT = 90.0 is a good upper bound for depth 3
+TIMELIMIT = 45.0

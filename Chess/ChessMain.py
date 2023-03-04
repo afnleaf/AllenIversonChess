@@ -14,6 +14,8 @@ from multiprocessing import Process, Queue
 # My files
 import Engine
 import AIMoveFinder
+# for hashing the transposition tables
+from Zobrist import ZobristHash
 
 # Size of window
 WIDTH = HEIGHT = 720
@@ -50,6 +52,10 @@ class Game():
         self.square_selected = ()
         # Track player clicks, two tuples
         self.player_clicks = []
+
+        # speed up AI
+        self.zobrist = ZobristHash()
+        self.transposition_table = {}
 
         # Flags
         self.move_made = False
@@ -228,7 +234,15 @@ class Game():
                     print("Calculating...")
                     # Multi-Threading
                     returnQueue = Queue()
-                    self.move_finder_process = Process(target=AIMoveFinder.get_best_move_minmax, args=(self.gs, valid_moves, returnQueue))
+                    self.move_finder_process = Process(
+                        target=AIMoveFinder.get_best_move_minmax, 
+                        args=(
+                            self.gs, 
+                            valid_moves, 
+                            returnQueue,
+                            self.transposition_table,
+                            self.zobrist)
+                        )
                     self.move_finder_process.start()
 
                 if not self.move_finder_process.is_alive():
